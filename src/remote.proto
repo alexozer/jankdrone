@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+package jankcopter;
+
+message Remote {
+	message IntVar {
+		string name = 1;
+		int32 value = 2;
+	}
+
+	message FloatVar {
+		string name = 1;
+		float value = 2;
+	}
+
+	message BoolVar {
+		string name = 1;
+		bool value = 2;
+	}
+
+	message StringVar {
+		string name = 1;
+		string value = 2;
+	}
+
+	message Group {
+		required string name = 1;
+		repeated IntVar intVar = 2;
+		repeated FloatVar floatVar = 3;
+		repeated BoolVar boolVar = 4;
+		repeated StringVar stringVar = 5;
+	}
+
+	repeated Group = 1;
+}
