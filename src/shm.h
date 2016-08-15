@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -56,7 +56,7 @@ class Shm {
 
 			private:
 				std::string m_name;
-				std::map<std::string, Var> m_vars;
+				std::unordered_map<std::string, Var> m_vars;
 		};
 
 		Shm(const Shm&) = delete;
@@ -70,5 +70,5 @@ class Shm {
 		Shm(std::vector<Group> groups);
 		static Shm& get();
 
-		std::map<std::string, Group> m_groups;
+		std::unordered_map<std::string, Group> m_groups;
 };
