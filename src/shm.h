@@ -11,14 +11,15 @@ class Shm {
 			public:
 				enum class Type {INT, FLOAT, BOOL, STRING};
 
-				Var(std::string name, int value);
-				Var(std::string name, float value);
-				Var(std::string name, bool value);
-				Var(std::string name, std::string value);
-				Var(std::string name, const char* value);
+				Var(std::string name, int value, int tag);
+				Var(std::string name, float value, int tag);
+				Var(std::string name, bool value, int tag);
+				Var(std::string name, std::string value, int tag);
+				Var(std::string name, const char* value, int tag);
 
 				std::string name();
 				Type type();
+				int tag();
 
 				void set(int value);
 				void set(float value);
@@ -34,6 +35,7 @@ class Shm {
 			private:
 				std::string m_name;
 				Type m_type;
+				int m_tag;
 
 				union {
 					int m_intValue;
@@ -52,6 +54,7 @@ class Shm {
 
 				std::string name();
 				Var* var(std::string name);
+				Var* varIfExists(std::string name);
 				std::vector<Var*> vars();
 
 			private:
@@ -63,7 +66,11 @@ class Shm {
 		void operator=(const Shm&) = delete;
 
 		static Var* var(std::string name);
+		static Var* var(int tag);
+		static Var* varIfExists(std::string name);
+		static Var* varIfExists(int tag);
 		static Group* group(std::string name);
+		static Group* groupIfExists(std::string name);
 		static std::vector<Group*> groups();
 	
 	private:
@@ -71,4 +78,5 @@ class Shm {
 		static Shm& get();
 
 		std::unordered_map<std::string, Group> m_groups;
+		std::unordered_map<int, Var*> m_tagMap;
 };

@@ -1,6 +1,5 @@
 #include "teensy.h"
 #include <Arduino.h>
-#include "shm.h"
 #include "thread.h"
 #include "logger.h"
 

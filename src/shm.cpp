@@ -2,20 +2,20 @@
 #include "logger.h"
 #include "shm.h"
 
-Shm::Var::Var(std::string name, int value):
-	m_name{name}, m_type{Type::INT}, m_intValue{value} {}
+Shm::Var::Var(std::string name, int value, int tag):
+	m_name{name}, m_type{Type::INT}, m_tag{tag}, m_intValue{value} {}
 
-Shm::Var::Var(std::string name, float value):
-	m_name{name}, m_type{Type::FLOAT}, m_floatValue{value} {}
+Shm::Var::Var(std::string name, float value, int tag):
+	m_name{name}, m_type{Type::FLOAT}, m_tag{tag}, m_floatValue{value} {}
 
-Shm::Var::Var(std::string name, bool value):
-	m_name{name}, m_type{Type::BOOL}, m_boolValue{value} {}
+Shm::Var::Var(std::string name, bool value, int tag):
+	m_name{name}, m_type{Type::BOOL}, m_tag{tag}, m_boolValue{value} {}
 
-Shm::Var::Var(std::string name, std::string value):
-	m_name{name}, m_type{Type::STRING}, m_stringValue{value} {}
+Shm::Var::Var(std::string name, std::string value, int tag):
+	m_name{name}, m_type{Type::STRING}, m_tag{tag}, m_stringValue{value} {}
 
-Shm::Var::Var(std::string name, const char* value):
-	Var{name, std::string(value)} {}
+Shm::Var::Var(std::string name, const char* value, int tag):
+	Var{name, std::string(value), tag} {}
 
 std::string Shm::Var::name() {
 	return m_name;
@@ -23,6 +23,10 @@ std::string Shm::Var::name() {
 
 Shm::Var::Type Shm::Var::type() {
 	return m_type;
+}
+
+int Shm::Var::tag() {
+	return m_tag;
 }
 
 void Shm::Var::set(int value) {
@@ -82,10 +86,8 @@ std::string Shm::Var::typeString(Type type) {
 void Shm::Var::verifyType(Type type) {
 	std::string typeName;
 	if (type != m_type) {
-		Logger::error("Variable " + m_name + 
-				" has type " + typeString(m_type) + 
-				", not type " + typeString(type));
-		exit(1);
+		Logger::fatal("Variable {} has type {}, not type {}",
+				m_name, typeString(m_type), typeString(type));
 	}
 }
 
@@ -101,17 +103,25 @@ std::string Shm::Group::name() {
 }
 
 Shm::Var* Shm::Group::var(std::string name) {
-	auto it = m_vars.find(name);
-	if (it == m_vars.end()) {
-		Logger::error("Variable " + name + " not found");
-		exit(1);
+	auto var = varIfExists(name);
+	if (!var) {
+		Logger::fatal("Variable {} not found", name);
 	}
 
-	return &it->second;
+	return var;
+}
+
+Shm::Var* Shm::Group::varIfExists(std::string name) {
+	auto it = m_vars.find(name);
+	if (it != m_vars.end()) {
+		return &it->second;
+	} else {
+		return nullptr;
+	}
 }
 
 std::vector<Shm::Var*> Shm::Group::vars() {
-	std::vector<Var*> varList(m_vars.size());
+	std::vector<Var*> varList;
 	for (auto& varPair : m_vars) {
 		varList.push_back(&varPair.second);
 	}
@@ -119,29 +129,85 @@ std::vector<Shm::Var*> Shm::Group::vars() {
 }
 
 Shm::Var* Shm::var(std::string name) {
+	auto v = varIfExists(name);
+	if (!v) {
+		Logger::fatal("Variable {} not found", name);
+	}
+
+	return v;
+}
+
+Shm::Var* Shm::var(int tag) {
+	auto v = varIfExists(tag);
+	if (!v) {
+		Logger::fatal("Variable tag {} not found", tag);
+	}
+
+	return v;
+}
+
+Shm::Var* Shm::varIfExists(std::string name) {
 	auto dotPos = name.find('.');
 	if (dotPos == std::string::npos) {
-		Logger::error(name + " is not a valid variable path");
-		exit(1);
+		return nullptr;
 	}
-	auto groupName = name.substr(0, dotPos);
-	auto varName = name.substr(dotPos + 1);
 
-	return group(groupName)->var(varName);
+	auto groupName = name.substr(0, dotPos);
+	auto g = groupIfExists(groupName);
+	if (g) {
+		auto varName = name.substr(dotPos + 1);
+		return g->varIfExists(varName);
+	} else {
+		return nullptr;
+	}
+}
+
+Shm::Var* Shm::varIfExists(int tag) {
+	auto it = get().m_tagMap.find(tag);
+	if (it == get().m_tagMap.end()) {
+		return nullptr;
+	} else {
+		return it->second;
+	}
 }
 
 Shm::Group* Shm::group(std::string name) {
-	auto it = get().m_groups.find(name);
-	if (it == get().m_groups.end()) {
-		Logger::error("Group " + name + " not found");
-		exit(1);
+	auto g = groupIfExists(name);
+	if (!g) {
+		Logger::fatal("Group {} not found", name);
 	}
 
-	return &it->second;
+	return g;
+}
+
+Shm::Group* Shm::groupIfExists(std::string name) {
+	auto it = get().m_groups.find(name);
+	if (it == get().m_groups.end()) {
+		return nullptr;
+	} else {
+		return &it->second;
+	}
+}
+
+std::vector<Shm::Group*> Shm::groups() {
+	std::vector<Shm::Group*> gs;
+	for (auto& groupPair : get().m_groups) {
+		gs.push_back(&groupPair.second);
+	}
+	return gs;
 }
 
 Shm::Shm(std::vector<Group> groups) {
 	for (auto& g : groups) {
+		for (auto var : g.vars()) {
+			int tag = var->tag();
+			auto it = m_tagMap.find(tag);
+			if (it != m_tagMap.end()) {
+				Logger::fatal("Duplicate tag {}", tag);
+			} else {
+				m_tagMap.emplace(tag, var);
+			}
+		}
 		m_groups.emplace(g.name(), g);
 	}
 }
@@ -149,25 +215,25 @@ Shm::Shm(std::vector<Group> groups) {
 Shm& Shm::get() {
 	static Shm shm{{
 		{"motorDesires", {
-			{"front", 0},
-			{"left", 0},
-			{"right", 0},
-			{"back", 0},
+			{"front", 0, 1},
+			{"left", 0, 2},
+			{"right", 0, 3},
+			{"back", 0, 4},
 		}},
 
 		{"controller", {
-			{"enabled", false},
-			{"heading", 0.0},
-			{"tiltHeading", 0.0},
-			{"tiltAngle", 0.0},
-			{"verticalForce", 0.0},
+			{"enabled", false, 5},
+			{"heading", 0.0, 6},
+			{"tiltHeading", 0.0, 7},
+			{"tiltAngle", 0.0, 8},
+			{"verticalForce", 0.0, 9},
 		}},
 
 		{"led", {
-			{"front", 0},
-			{"left", 0},
-			{"right", 0},
-			{"back", 0},
+			{"front", 0, 10},
+			{"left", 0, 11},
+			{"right", 0, 12},
+			{"back", 0, 13},
 		}},
 	}};
 
