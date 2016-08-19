@@ -6,6 +6,8 @@ The jankest quadcopter the world has ever seen.
 - [x] Threading
 - [x] Logging
 - [ ] Bluetooth remote control
+	- [x] Protocol implementation
+	- [ ] Client application
 - [ ] IMU readings
 - [ ] Controller
 - [ ] LEDs

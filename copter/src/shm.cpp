@@ -69,15 +69,15 @@ std::string Shm::Var::getString() {
 	return m_stringValue;
 }
 
-std::string Shm::Var::typeString(Type type) {
+std::string Shm::typeString(Var::Type type) {
 	switch (type) {
-		case Type::INT:
+		case Var::Type::INT:
 			return "int";
-		case Type::FLOAT:
+		case Var::Type::FLOAT:
 			return "float";
-		case Type::BOOL:
+		case Var::Type::BOOL:
 			return "bool";
-		case Type::STRING:
+		case Var::Type::STRING:
 			return "string";
 	}
 	return "";
@@ -235,6 +235,10 @@ Shm& Shm::get() {
 			{"right", 0, 12},
 			{"back", 0, 13},
 		}},
+
+		{"testString", {
+			{"testString", "", 14},
+	    }},
 	}};
 
 	return shm;

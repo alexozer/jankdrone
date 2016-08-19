@@ -1,3 +1,6 @@
 *.pb.*
 *.gch
-/.pioenvs
+/copter/.pioenvs
+__pycache__/
+.ropeproject/
+*.pyc

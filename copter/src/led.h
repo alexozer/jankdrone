@@ -7,5 +7,5 @@ class Led {
 		Led();
 
 		void operator()();
-		void blink();
+		void fade();
 };

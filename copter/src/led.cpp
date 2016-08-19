@@ -2,6 +2,7 @@
 #include "shm.h"
 #include "config.h"
 #include "led.h"
+#include "logger.h"
 
 Led::Led() {
 	for (auto pin : {FRONT_LED_PIN, LEFT_LED_PIN, RIGHT_LED_PIN, BACK_LED_PIN}) {
@@ -21,14 +22,16 @@ void Led::operator()() {
 	analogWrite(BACK_LED_PIN, back->getInt());
 }
 
-constexpr int BLINK_PERIOD = 500;
+constexpr int FADE_PERIOD = 500,
+		  FADE_MAX_VALUE = 200;
 
-void Led::blink() {
-	static auto led = Shm::var("led.front");
-
-	if ((millis() % BLINK_PERIOD) < BLINK_PERIOD / 2) {
-		led->set(255);
-	} else {
-		led->set(0);
+void Led::fade() {
+	int modMillis = millis() % FADE_PERIOD;
+	int pwm = (modMillis % (FADE_PERIOD / 2)) * FADE_MAX_VALUE / (FADE_PERIOD / 2);
+	if (modMillis > FADE_PERIOD / 2) {
+		pwm = FADE_MAX_VALUE - pwm;
 	}
+
+	static auto led = Shm::var("led.front");
+	led->set(pwm);
 }

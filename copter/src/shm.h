@@ -44,7 +44,6 @@ class Shm {
 				};
 				std::string m_stringValue; // Can't go in union, can't destruct
 
-				std::string typeString(Type type);
 				void verifyType(Type type);
 		};
 
@@ -69,9 +68,12 @@ class Shm {
 		static Var* var(int tag);
 		static Var* varIfExists(std::string name);
 		static Var* varIfExists(int tag);
+
 		static Group* group(std::string name);
 		static Group* groupIfExists(std::string name);
 		static std::vector<Group*> groups();
+
+		static std::string typeString(Shm::Var::Type type);
 	
 	private:
 		Shm(std::vector<Group> groups);
