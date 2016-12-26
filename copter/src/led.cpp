@@ -11,10 +11,10 @@ Led::Led() {
 }
 
 void Led::operator()() {
-	static auto front = Shm::var("led.front"),
-				left = Shm::var("led.left"),
-				right = Shm::var("led.right"),
-				back = Shm::var("led.back");
+	static auto front = Shm::var("leds.front"),
+				left = Shm::var("leds.left"),
+				right = Shm::var("leds.right"),
+				back = Shm::var("leds.back");
 
 	analogWrite(FRONT_LED_PIN, front->getInt());
 	analogWrite(LEFT_LED_PIN, left->getInt());
@@ -32,6 +32,6 @@ void Led::fade() {
 		pwm = FADE_MAX_VALUE - pwm;
 	}
 
-	static auto led = Shm::var("led.front");
+	static auto led = Shm::var("leds.front");
 	led->set(pwm);
 }

@@ -11,6 +11,7 @@ class Remote {
 		void operator()();
 
 	private:
+		bool m_firstRun;
 		Adafruit_BLE_UART m_bluetooth;
 		aci_evt_opcode_t m_lastState;
 		uint8_t m_messageBuffer[512];

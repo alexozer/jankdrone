@@ -1,0 +1,5 @@
+#!/bin/bash
+SCRIPTDIR=$(dirname "$0")
+export LD_LIBRARY_PATH=$SCRIPTDIR
+export PATH=$SCRIPTDIR:$PATH
+exec "$SCRIPTDIR/protoc.bin" "$@"

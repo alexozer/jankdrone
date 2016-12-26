@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+message ShmUpdate {
+	message Var {
+		required int32 tag = 1;
+		optional int32 intValue = 2;
+		optional float floatValue = 3;
+		optional bool boolValue = 4;
+	}
+
+	repeated Var var = 1;
+}

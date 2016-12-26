@@ -1,21 +1,22 @@
 #include <SPI.h>
 #include "logger.h"
 #include "shm.h"
+#include "config.h"
 #include "remote.h"
 
-constexpr int REQ_PIN = 10,
-		  RDY_PIN = 2,
-		  RST_PIN = 9;
-
 Remote::Remote():
-	m_bluetooth{REQ_PIN, RDY_PIN, RST_PIN},
-	m_lastState{ACI_EVT_DISCONNECTED}
-{
-	//m_bluetooth.begin();
-}
+	m_firstRun{true},
+	m_bluetooth{BLUEFRUIT_REQ_PIN, BLUEFRUIT_RDY_PIN, BLUEFRUIT_RST_PIN},
+	m_lastState{ACI_EVT_DISCONNECTED} {}
 
 void Remote::operator()() {
-	//readBluetooth();
+	// Must read bluetooth soon after begin()
+	if (m_firstRun) {
+		m_bluetooth.begin();
+		m_firstRun = false;
+	}
+
+	readBluetooth();
 	readStream(&Serial);
 }
 
