@@ -15,19 +15,19 @@ untagged_shm = {
         'verticalForce': 0.0,
 
         'yawEnabled': True,
-        'yaw': 0.0,
+        'yawDesire': 0.0,
         'yawP': 1.0,
         'yawI': 0.0,
         'yawD': 0.0,
 
-        'pitchEnabled': False,
-        'pitch': 0.0,
+        'pitchEnabled': True,
+        'pitchDesire': 0.0,
         'pitchP': 1.0,
         'pitchI': 0.0,
         'pitchD': 0.0,
 
         'rollEnabled': True,
-        'roll': 0.0,
+        'rollDesire': 0.0,
         'rollP': 1.0,
         'rollI': 0.0,
         'rollD': 0.0,
@@ -53,7 +53,7 @@ untagged_shm = {
 }
 
 def tag(untagged):
-    current_tag = 1
+    current_tag = 0
     tagged_groups = {}
     for g_name, g_vars in sorted(untagged.items()):
         tagged_vars = {}

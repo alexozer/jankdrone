@@ -30,8 +30,12 @@ int Shm::Var::tag() {
 }
 
 void Shm::Var::set(int value) {
-	verifyType(Type::INT);
-	m_intValue = value;
+	if (m_type == Type::FLOAT) {
+		set((float)value);
+	} else {
+		verifyType(Type::INT);
+		m_intValue = value;
+	}
 }
 
 void Shm::Var::set(float value) {

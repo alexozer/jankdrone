@@ -5,7 +5,7 @@
 
 class Thread {
 	public:
-		Thread(std::function<void()> func, unsigned long interval);
+		Thread(std::function<void()> func, unsigned long interval, bool useMillis = true);
 		void operator()();
 
 	private:
@@ -13,6 +13,7 @@ class Thread {
 		unsigned long m_interval;
 		unsigned long m_lastTime;
 		bool m_hasRun;
+		bool m_useMillis;
 };
 
 class ThreadController {
