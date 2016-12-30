@@ -1,0 +1,152 @@
+.. -*-coding: utf-8-*-
+
+======================================
+Pyratemp doctest/examples for Python 3
+======================================
+
+:Version:   0.3.0
+
+init::
+
+    >>> from pyratemp import *
+
+:Example:
+
+    quickstart::
+        >>> t = Template("hello @!name!@")
+        >>> print(t(name="marvin"))
+        hello marvin
+
+    quickstart with a template-file::
+        # >>> t = Template(filename="mytemplate.tmpl")
+        # >>> print(t(name="marvin"))
+        # hello marvin
+
+    generic usage::
+        >>> t = Template("output is in Unicode äöü€")
+        >>> t                                           #doctest: +ELLIPSIS
+        <...Template object at 0x...>
+        >>> t()
+        'output is in Unicode äöü€'
+
+    with data::
+        >>> t = Template("hello @!name!@", data={"name":"world"})
+        >>> t()
+        'hello world'
+        >>> t(name="worlds")
+        'hello worlds'
+
+        # >>> t(note="data must be Unicode or ASCII", name="ä")
+        # 'hello ä'
+
+    escaping::
+        >>> t = Template("hello escaped: @!name!@, unescaped: $!name!$")
+        >>> t(name='''<>&'"''')
+        'hello escaped: &lt;&gt;&amp;&#39;&quot;, unescaped: <>&\'"'
+
+    result-encoding::
+        # encode the unicode-object to your encoding with encode()
+        >>> t = Template("hello \xe4\xf6\xfc\u20ac")
+        >>> result = t()
+        >>> result
+        'hello äöü€'
+        >>> result.encode("utf-8")
+        b'hello \xc3\xa4\xc3\xb6\xc3\xbc\xe2\x82\xac'
+        >>> result.encode("ascii")
+        Traceback (most recent call last):
+          ...
+        UnicodeEncodeError: 'ascii' codec can't encode characters in position 6-9: ordinal not in range(128)
+        >>> result.encode("ascii", 'xmlcharrefreplace')
+        b'hello &#228;&#246;&#252;&#8364;'
+
+    Python-expressions::
+        >>> Template('formatted: @! "%8.5f" % value !@')(value=3.141592653)
+        'formatted:  3.14159'
+        >>> Template("hello --@!name.upper().center(20)!@--")(name="world")
+        'hello --       WORLD        --'
+        >>> Template("calculate @!var*5+7!@")(var=7)
+        'calculate 42'
+
+    blocks (if/for/macros/...)::
+        >>> t = Template("<!--(if foo == 1)-->bar<!--(elif foo == 2)-->baz<!--(else)-->unknown(@!foo!@)<!--(end)-->")
+        >>> t(foo=2)
+        'baz'
+        >>> t(foo=5)
+        'unknown(5)'
+
+        >>> t = Template("<!--(for i in mylist)-->@!i!@ <!--(else)-->(empty)<!--(end)-->")
+        >>> t(mylist=[])
+        '(empty)'
+        >>> t(mylist=[1,2,3])
+        '1 2 3 '
+
+        >>> t = Template("<!--(for i,elem in enumerate(mylist))--> - @!i!@: @!elem!@<!--(end)-->")
+        >>> t(mylist=["a","b","c"])
+        ' - 0: a - 1: b - 2: c'
+
+        >>> t = Template('<!--(macro greetings)-->hello <strong>@!name!@</strong><!--(end)-->  @!greetings(name=user)!@')
+        >>> t(user="monty")
+        '  hello <strong>monty</strong>'
+
+    exists::
+        >>> t = Template('<!--(if exists("foo"))-->YES<!--(else)-->NO<!--(end)-->')
+        >>> t()
+        'NO'
+        >>> t(foo=1)
+        'YES'
+        >>> t(foo=None)       # note this difference to 'default()'
+        'YES'
+
+    default-values::
+        # non-existing variables raise an error
+        >>> Template('hi @!optional!@')()
+        Traceback (most recent call last):
+          ...
+        pyratemp.TemplateRenderError: Cannot eval expression 'optional'. (NameError: name 'optional' is not defined)
+
+        >>> t = Template('hi @!default("optional","anyone")!@')
+        >>> t()
+        'hi anyone'
+        >>> t(optional=None)
+        'hi anyone'
+        >>> t(optional="there")
+        'hi there'
+
+        # the 1st parameter can be any eval-expression
+        >>> t = Template('@!default("5*var1+var2","missing variable")!@')
+        >>> t(var1=10)
+        'missing variable'
+        >>> t(var1=10, var2=2)
+        '52'
+
+        # also in blocks
+        >>> t = Template('<!--(if default("opt1+opt2",0) > 0)-->yes<!--(else)-->no<!--(end)-->')
+        >>> t()
+        'no'
+        >>> t(opt1=23, opt2=42)
+        'yes'
+
+        >>> t = Template('<!--(for i in default("optional_list",[]))-->@!i!@<!--(end)-->')
+        >>> t()
+        ''
+        >>> t(optional_list=[1,2,3])
+        '123'
+
+
+        # but make sure to put the expression in quotation marks, otherwise:
+        >>> Template('@!default(optional,"fallback")!@')()
+        Traceback (most recent call last):
+          ...
+        pyratemp.TemplateRenderError: Cannot eval expression 'default(optional,"fallback")'. (NameError: name 'optional' is not defined)
+
+    setvar::
+        >>> t = Template('$!setvar("i", "i+1")!$@!i!@')
+        >>> t(i=6)
+        '7'
+
+        >>> t = Template('''<!--(if isinstance(s, (list,tuple)))-->$!setvar("s", '"\\\\\\\\n".join(s)')!$<!--(end)-->@!s!@''')
+        >>> t(isinstance=isinstance, s="123")
+        '123'
+        >>> t(isinstance=isinstance, s=["123", "456"])
+        '123\\n456'
+

@@ -1,0 +1,1272 @@
+.. -*- coding: utf-8-
+.. rest2web header
+    
+    restindex
+        page-title: simple is better - pyratemp
+        crumb: pyratemp
+        page-description:
+            template-engine pyratemp
+        /description
+    
+        tags: pyratemp, template, template-engine, python, python 3, simple, pythonic, fast, lightweight
+        initialheaderlevel: 2
+    
+        format: rest
+        encoding: utf-8
+        output-encoding: None
+    
+        file: pyratemp-0.2.5.tgz
+        file: pyratemp-0.3.2.tgz
+    /restindex
+    
+    uservalues
+        meta_description: pyratemp, pyratemp_tool, template-engine, template processor, Python, Python 3, simple
+        blockquote:
+        omit_footer_img:
+    /uservalues
+
+========
+pyratemp
+========
+
+:Author:    Roland Koebler (rk *at* simple-is-better *dot* org)
+:Website:   http://www.simple-is-better.org/template/pyratemp.html
+:Date:      2013-09-17
+
+.. raw:: html
+
+    <table align="right" style="float:right"><tr><td><pre>
+
+       /\.
+      /  \`.
+     /    \ `.
+    /______\/
+
+    </pre></td></tr></table>
+
+.. meta::
+    :description: pyratemp template-engine
+    :keywords: pyratemp, Python template-engine, pseudo sandbox, sandbox, simple
+
+.. contents:: **Table of Contents**
+    :backlinks: none
+.. sectnum::
+
+-----
+
+Overview
+========
+
+*pyratemp is a very simple, easy to use, small, fast, powerful, modular,
+extensible, well documented and pythonic template-engine for Python*.
+
+It's a template-engine of my "category 3" as described in my `thoughts about
+Template Engines`_.
+
+It uses a template-language with a small set of Python-like control-structures
+(if/elif/else, for, and user-defined macros/functions) and directly benefits
+from Python by using Python-expressions [#]_.
+
+It's extremely easy to use in Python, well documented and produces good
+error-messages (incl. line- and column-position) when there is an error in
+a template.
+
+Additionally, it's extensible and its code is quite small and readable.
+
+.. _thoughts about Template Engines: http://www.simple-is-better.org/template/
+.. [#] or: "pseudo-sandboxed" Python expressions, see `Evaluation`_
+
+
+Features
+--------
+
+My template-engine has everything I think a template-engine needs:
+
+- variable-substitution, incl. special-character-escaping
+  (e.g. HTML, mail_header, LaTeX)
+- conditionals (if/elif/else), loops (for/else)
+- template-defined functions/macros/variables
+- inclusion of other templates
+
+- very powerful expressions (due to Python)
+- `pseudo-sandbox`_: the Python-expressions are evaluated inside a
+  "pseudo-sandbox" which prevents that "bad things" are done by
+  accident; and even a "real" sandbox could be added
+
+- clear template syntax ("There should be one -- and preferably only one --
+  obvious way to do it." [#]_)
+- non-XML, so it can be used for any kind of documents
+- good error-handling and good error-messages, incl. the exact position
+  of an error in the template-file
+- completely uses Unicode
+
+- `fast`_ and lightweight
+- modular: pyratemp consists of several parts, which can be used separately,
+  or even be replaced by an alternative implementation
+- extensible: additional functions can be easily added to the templates,
+  and due to its modularity, the parts can be modified or even replaced
+- small code base, which is well documented and should be easy to read and
+  understand
+  (about 500 lines-of-code + 500 lines of docstrings and comments)
+
+.. _pseudo-sandbox: `Evaluation`_
+.. [#] from: `The Zen of Python`_
+.. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
+.. _fast: http://www.simple-is-better.org/template/#benchmarks
+
+
+Quickstart
+==========
+
+:Note:
+    Most examples are in Python 2 syntax.
+    To use them in Python 3, replace ``u"..."`` by ``"..."``
+
+Let's begin with an extremely simple example. Start your python-interpreter,
+and type::
+
+    >>> import pyratemp
+    >>> t = pyratemp.Template("Hello @!name!@.")
+    >>> print t(name="World")
+    Hello World.
+    >>> print t(name="Universe")
+    Hello Universe.
+
+
+Now, let's go to a more comprehensive example. Here, we put the template
+in a separate file, named `example.html`::
+
+    <!--(set_escape)-->
+        html
+    <!--(end)-->
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+              "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <head>
+      <title>A simple example: @!title!@</title>
+    </head>
+    <body>
+      <h1>@!title!@</h1>
+      This is a simple example, demonstrating pyratemp:
+      #! Comments don't appear in the result !#
+      <ul>
+
+        <li>@!special_chars!@</li>
+
+        <li>
+          <!--(if number==42)-->
+            The Answer!
+          <!--(elif number==13)-->
+            oh no!
+          <!--(else)-->
+            @!number!@
+          <!--(end)-->
+        </li>
+
+        <li>a simple for loop: <!--(for i in range(1,10))--> @!i!@ <!--(end)--></li>
+
+        <li>listing all enumerated elements of a list:
+          <ul>
+          <!--(for i,element in enumerate(mylist))-->
+            <li>@!i+1!@. @!element.upper()!@</li>
+          <!--(end)-->
+          </ul>
+        </li>
+
+    <!--(macro myitem)-->
+    <li><strong>@!item!@</strong></li>
+    <!--(end)-->
+        @!myitem(item="foo")!@
+        @!myitem(item="bar")!@
+
+      </ul>
+
+    </body>
+    </html>
+
+Start python again, and type::
+
+    >>> import pyratemp
+    >>> t = pyratemp.Template(filename="example.html")
+    >>> result = t(title="pyratemp is simple!", special_chars=u"""<>"'&äöü""", number=42, mylist=("Spam", "Parrot", "Lumberjack"))
+    >>> print result.encode("ascii", 'xmlcharrefreplace')
+
+And here is the result::
+
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+              "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <head>
+      <title>A simple example: pyratemp is simple!</title>
+    </head>
+    <body>
+      <h1>pyratemp is simple!</h1>
+      This is a simple example, demonstrating pyratemp:
+
+      <ul>
+
+        <li>&lt;&gt;&quot;&#39;&amp;&#228;&#246;&#252;</li>
+
+        <li>
+            The Answer!
+        </li>
+
+        <li>a simple for loop:  1  2  3  4  5  6  7  8  9 </li>
+
+        <li>listing all enumerated elements of a list:
+          <ul>
+            <li>1. SPAM</li>
+            <li>2. PARROT</li>
+            <li>3. LUMBERJACK</li>
+          </ul>
+        </li>
+
+        <li><strong>foo</strong></li>
+        <li><strong>bar</strong></li>
+
+      </ul>
+
+    </body>
+    </html>
+
+
+You can also use `pyratemp_tool`_ with the included `example.html` and
+`example.json` to play with this example.
+
+More small examples can be found in the pyratemp-docstring
+(-> ``pydoc pyratemp``).
+
+
+Template syntax
+===============
+
+A template is a normal text file, containing some special placeholders and
+control-structures.
+
+pyratemp uses only a *very small set* of control-structures
+(if/elif/else, for/else, macro, raw, include, set_escape)
+and little special template-syntax
+($!..!$, @!..!@, #!..!#, <!--(...)-->).
+This makes the templates both easy to use and easy to understand [#]_.
+
+Note that you can find several small examples in the pyratemp-docstring.
+
+.. [#] "There should be one -- and preferably only one -- obvious way to do
+   it." [`The Zen of Python`_])
+
+
+Substitution
+------------
+The template can contain placeholders, which are replaced by the evaluated
+result of their contents. pyratemp has two different placeholders:
+
+- ``@!EXPR!@`` escaped substitution: special characters are escaped
+- ``$!EXPR!$`` unescaped/raw substitution
+
+Normally, you should always use ``@!...!@``, since this escapes special
+characters. Currently, the following formats are supported:
+
+- HTML (default): ``& < > " '`` are escaped to ``&amp;``,
+  ``&lt;``, ``&gt;``, ``&quot;``, ``&#39``.
+- MAIL_HEADER: encode non-ASCII mail-headers
+- LATEX: ``\ # $ % & { } _ ~ ^`` are escaped.
+- NONE: no characters are replaced
+
+``EXPR`` can be any `expression`_ (e.g. a variable-name, an arithmetic
+calculation, a function-/macro-call etc.), and is evaluated when the template
+is rendered. Whitespace after ``@!``/``$!`` and before ``!@``/``!$`` is
+ignored.
+
+Examples:
+
+- | ``hello @!name!@.`` + `name="marvin"`
+  | -> ``hello marvin.``
+- | ``hello escaped: @!name!@, unescaped: $!name!$`` + `name="<>&'\""`
+  | -> ``hello escaped: &lt;&gt;&amp;&#39;&quot;, unescaped: <>&\'"``
+- | ``formatted: @! "%8.5f" % value !@`` + `value=3.141592653`
+  | -> ``formatted:  3.14159``
+- | ``hello --@!name.upper().center(20)!@--`` + `name="world"`
+  | -> ``hello --       WORLD        --``
+- | ``calculate @!var*5+7!@`` + `var=7`
+  | -> ``calculate 42``
+
+.. _expression: `Expressions`_
+
+
+Comments
+--------
+Comments can be used in a template, and they do not appear in the result.
+They are especially useful for (a) documenting the template, (b) temporarily
+disabling parts of the template or (c) suppressing whitespace.
+
+- ``#!...!#`` single-line comment with start- and end-tag
+- ``#!...``  single-line-comment until end-of-line, incl. newline
+
+The second version also comments out the newline, and so can be used at the
+end of a line to remove that newline in the result (like a backslash in
+Python-strings).
+
+Comments can contain anything, but comments may not appear inside
+substitutions or block-tags.
+
+
+Blocks
+------
+The control-structures, macros etc. have a special syntax, which consists
+of a start-tag (which is named according to the block), optional additional
+tags, and an end-tag::
+
+    <!--(...)-->        #! start tag
+       ..
+       ..
+    <!--(...)-->        #! optional additional tags (e.g. for elif)
+       ..
+       ..
+    <!--(end)-->        #! end tag
+
+All tags must stand on their own line, and no code (except a ``#!...``-comment)
+is allowed after the tag.
+
+All tags which belong to the same block **must** have the same indent!
+The contents of the block does not need to be indented, although it might
+improve the readability (e.g. in HTML) to indent the contents as well.
+
+Nesting blocks is possible, but the tags of nested blocks **must**
+have a different indent than the tags of the enclosing blocks. [#]_
+
+
+There's also a single-line version of a block, which does not need to stand on
+its own line, but can be inserted anywhere in the template.
+But note that this version does not support nesting [#]_::
+
+    ...<!--(...)-->...<!--(...)-->...<!--(end)-->...
+
+
+.. [#] Note that you should either use spaces *or* tabs for indentation. Since
+    pyratemp distinguishes between spaces and tabs, if you mix spaces and
+    tabs, two indentations might *look* the same (e.g. 8 spaces or 1 tab) but
+    still be different, which might lead to unexpected errors.
+
+.. [#] Although if you really want to nest single-line blocks, you
+   nevertheless can do that by hiding the inner blocks in macros.
+
+
+if/elif/else
+~~~~~~~~~~~~
+
+Syntax::
+
+    <!--(if EXPR)-->
+    ...
+    <!--(elif EXPR)-->
+    ...
+    <!--(else)-->
+    ...
+    <!--(end)-->
+
+or::
+
+    ...<!--(if EXPR)-->...<!--(elif EXPR)-->...<!--(else)-->...<!--(end)-->...
+
+The elif- and else-branches are optional, and there can be any number of
+elif-branches.
+
+
+for/else
+~~~~~~~~
+
+Syntax::
+
+    <!--(for VARS in EXPR)-->
+    ...
+    <!--(else)-->
+    ...
+    <!--(end)-->
+
+::
+
+    ...<!--(for VARS in EXPR)-->...<!--(else)-->...<!--(end)-->...
+
+| ``VARS`` can be a single variable-name (e.g. ``myvar``) or a comma-separated
+  list of variable-names (e.g. ``i,val``).
+
+The else-branch is optional, and is executed only if the for-loop doesn't
+iterate at all.
+
+
+macro
+~~~~~
+
+Macros are user-defined "sub-templates", and so can contain anything a
+template itself can contain. They can have parameters and are normally
+used to encapsulate parts of a template and to create user-defined
+"functions". Macros can be used in `expressions`_, just like a normal
+variable or function.
+
+Definition::
+
+    <!--(macro MACRONAME)-->
+    ...
+    <!--(end)-->
+
+::
+
+    ...<!--(macro MACRONAME)-->...<!--(end)-->...
+
+``MACRONAME`` may consist of alphanumeric characters and underscores (``[0-9A-Za-z_]+``).
+
+Note that the last newline (before ``<!--(end)-->``) is removed from the
+macro, so that defining and using a macro does not add additional empty
+lines.
+
+Usage in expressions::
+
+    MACRONAME
+
+::
+
+    MACRONAME(KEYWORD_ARGs)
+
+``KEYWORD_ARGs`` can be any number of comma-separated name-value-pairs
+(``name=value, ...``), and these names then will be locally defined inside
+the macro -- in addition to those already defined for the whole template.
+
+Example::
+
+    <!--(macro header)-->
+    <html>
+    <head>
+      <title>A simple example: @!title!@</title>
+    </head>
+    <body>
+    <!--(end)-->
+
+    <!--(macro myfunc)-->
+    <li><!--(if exists("link"))--><a href="@!link!@">@!default("item",link)!@</a><!--(else)-->@!item!@<!--(end)--></li>
+    <!--(end)-->
+
+
+    @!header!@
+    <ul>
+    @!myfunc(item="Macros are fun!")!@
+    @!myfunc(item="Simple is better", link="http://www.simple-is-better.org")!@
+    @!myfunc(link="http://www.wikipedia.org")!@
+    </ul>
+
+
+Macros are protected against double-escaping, so if you use ``@!MACRONAME!@``
+or ``@!MACRONAME(...)!@``, the result of the macro is not escaped again,
+and behaves exactly like ``$!MACRONAME!$`` or ``$!MACRONAME(...)!$``.
+But note that this only works if the macro is used as single expression
+inside ``@!...!@`` -- if you use additional expressions in the same
+substitution, e.g. ``@!MACRONAME + "hi"!@``, then the result would be
+escaped again.
+
+
+raw
+~~~
+
+Syntax::
+
+    <!--(raw)-->
+    ...
+    <!--(end)-->
+
+::
+
+    ...<!--(raw)-->...<!--(end)-->...
+
+Everything inside a ``raw`` block is passed verbatim to the result.
+
+
+include
+~~~~~~~
+
+Syntax::
+
+    <!--(include)-->
+      FILENAME
+    <!--(end)-->
+
+::
+
+    ...<!--(include)-->FILENAME<!--(end)-->...
+
+Include another template-file. Only a single filename (+whitespace) is
+allowed inside of the block; if you want to include several files, use
+several include-blocks.
+
+Note that inclusion of other templates is only supported when loading the
+template from a file. For simplicity and security, ``FILENAME`` may not
+contain a path, and only files which are in the same directory as the
+template itself can be included.
+
+
+set_escape
+~~~~~~~~~~
+Since the template-engine can be used for all kind of documents, it may be
+useful if the calling Python-code doesn't need to know which format the
+template is of. But then, the template itself has to define its format,
+and especially which special characters should be escaped.
+
+Syntax::
+
+    <!--(set_escape)-->
+      FORMAT
+    <!--(end)-->
+
+::
+
+    ...<!--(set_escape)-->FORMAT<!--(end)-->...
+
+Currently, ``FORMAT`` supports ``"None"``, ``"HTML"``, ``"mail_header"`` and
+``"LaTeX"`` (see `Substitution`_) [#]_.
+
+``set_escape`` affects every substitution in the template *after* this command.
+It's also possible to use different escapings in the same template by using
+several such ``set_escape`` blocks at different places.
+
+
+.. [#] Note that ``FORMAT`` is case-insensitive, so e.g. ``html``,
+   ``Html`` and ``HTML`` are equal, and that whitespace around
+   ``FORMAT`` is ignored.
+
+Expressions
+-----------
+A template needs some kind of "programming-language" to access variables,
+calculate things, format data, check conditions etc. inside the template.
+So, you could invent and implement an own language therefore -- or you
+could use an already existing and well designed language: Python.
+
+pyratemp uses embedded Python-expressions.
+An expression is everything which evaluates to a value, e.g. variables,
+arithmetics, comparisons, boolean expressions, function/method calls,
+list comprehensions etc. [#]_. And such Python expressions can be directly
+used in the template -- this makes pyratemp very powerful.
+But since it would be a bad idea to directly embed unrestricted Python-code
+in a template, these expressions are restricted by a `pseudo-sandbox`_.
+
+
+Examples:
+
+- numbers, strings, lists, tuples, dictionaries, ...: ``12.34``, ``"hello"``, ``[1,2,3]``, ...
+- variable-access: ``var``, ``mylist[i]``, ``mydict["key"]``, ``myclass.attr``
+- function/method call: ``myfunc(...)``, ``"foobar".upper()``
+- comparison: ``(i < 0  or  j > 1024)``
+- arithmetics: ``1+2``
+
+For details, please read the Python-documentation about Python expressions.
+
+Note that accessing *undefined variables* in the template is considered to be
+an error. I chose this behaviour in contrast to many other template-engines
+(which often ignore undefined variables), since ignoring undefined variables
+would silently hide some errors, which is a bad idea. For ignoring or using
+a default-value for undefined variables, see ``default()`` below.
+
+
+The following Python-built-in values/functions are available by default
+in the template::
+
+    True
+    False
+    None
+
+    abs()
+    chr()
+    cmp()       [removed in 0.3.0]
+    divmod()
+    hash()
+    hex()
+    isinstance() [new in 0.3.1 / 0.2.4]
+    len()
+    max()
+    min()
+    oct()
+    ord()
+    pow()
+    range()
+    round()
+    sorted()
+    sum()
+    unichr()
+    zip()
+
+    bool()
+    bytes()     [new in 0.3.0]
+    complex()
+    dict()
+    enumerate()
+    float()
+    int()
+    list()
+    long()
+    reversed()
+    set()       [new in 0.3.1 / 0.2.4]
+    str()
+    tuple()
+    unicode()
+    xrange()    [removed in 0.3.0]
+
+    dir()       [new in 0.3.1 / 0.2.4]
+
+Additionally, the functions ``exists()``, ``default()``, ``setvar()`` and
+``escape()`` are defined as follows:
+
+``exists("varname")``:
+    Test if a variable (or any other object) with the name *varname*
+    exists (in the current locals-namespace). Note that the name of the
+    variable has to be quoted, and that this only works for single variable
+    names, e.g. ``exists("mylist")``. If you want to test more complicated
+    expressions, use the ``default()``-function.
+
+    It's especially useful in if-conditions to check if some (optional)
+    variable exists, and then to branch accordingly.
+
+    Example::
+
+        <!--(if exists("foo"))-->YES<!--(else)-->NO<!--(end)-->
+
+``default("expr", default=None)``:
+    ``default()`` tries to evaluate the expression *expr*. If the evaluation
+    succeeds and the result is not ``None``, its value is returned;
+    otherwise, if the expression contains undefined variables/attributes, the
+    *default*-value is returned instead.
+    Note that *expr* has to be quoted.
+
+    Since it is considered an error when the template tries to evaluate an
+    undefined variable, this can be used to use default-values for optional
+    variables, e.g. ``Name: @!default("myvar", "No name given.")!@``.
+
+    Examples::
+
+        hi @!default("optional","anyone")!@
+
+        @!default("5*var1+var2","missing variable")!@
+
+        <!--(if default("opt1+opt2",0) > 0)-->yes<!--(else)-->no<!--(end)-->
+
+        <!--(for i in default("optional_list",[]))-->@!i!@<!--(end)-->
+
+``setvar("name", "expr")``:
+    Although there is often a more elegant way, sometimes it is useful or
+    necessary to set variables in the template. ``setvar()`` can also be
+    used to capture the output of e.g. an evaluated macro.
+
+    Note that variables, which are set inside of a macro, can not be accessed
+    outside of the macro.
+
+    Example::
+
+        $!setvar("i", "i+1")!$
+
+``escape("string", format=HTML)``:
+    Escape special characters. This is the same function, pyratemp uses
+    internally for ``@!...!@``, with a configurable format.
+
+    Supported formats: ``"None"``, ``"HTML"``, ``"mail_header"``, ``"LaTeX"``
+
+    Example::
+
+        $!escape(subject, "MAIL_HEADER")!$
+
+Note that you can use any expression evaluating to the desired string/value
+for all parameters (`varname`, `expr`, `default`, `name`) above.
+
+Please look into the pyratemp-docstrings for more examples of ``exists()``,
+``default()`` and ``setvar()``.
+
+More/user-defined functions can be added to the template as "data"
+(see `User-interface`_), or by extending the `evaluator`_.
+
+.. _evaluator: `Evaluation`_
+
+
+.. [#] Note that only Python *expressions* can be used, Python *statements*
+   are not possible. In contrast to Python expressions, statements do not
+   have a value but "do something" (e.g. if/for, print, raise, return, import
+   etc.). See also http://en.wikipedia.org/wiki/Expression_%28programming%29
+   and http://en.wikipedia.org/wiki/Statement_%28programming%29.
+
+
+Python-side
+===========
+
+pyratemp is modular and consists of several parts:
+
+- First, the template is loaded,
+- then, it is syntax-checked and parsed into a tree,
+- later, it is rendered with some data, using
+- some kind of evaluation for the expressions
+- and some escaping for the substitutions.
+
+Normally, you don't really need to know these parts, and may simply use the
+"user-interface" of the template-engine. If you are only interested in how to
+use the template-engine, it's enough to read the `User-interface`_-section
+below and skip the rest of this chapter.
+But for all who want to know more, here are also some details of the internal
+concepts of pyratemp.
+
+Note that pyratemp makes heavy use of docstrings, and all classes, functions
+etc. are documented there, so please read them (e.g. with ``pydoc pyratemp``).
+
+
+User-interface
+--------------
+
+The user-interface of the template-engine consists of a single class:
+``pyratemp.Template``. This loads a template, checks its syntax, parses
+it, and can render it with your data.
+
+``class Template(string|filename|parsetree, encoding="utf-8", data=None, escape=HTML)``:
+    Load (and parse) a template. The template can either be directly given
+    as string, or loaded from a file, or an already parsed template can be used.
+
+    ``encoding`` sets the charset-encoding of the loaded template (default: UTF-8).
+
+    ``data`` can be a dictionary containing some data which should be filled
+    into the template by default (=if the variables etc. are not given
+    when calling/rendering the template).
+
+    ``escape`` defines which special-characters should be escaped in
+    substitutions by default (currently supported: ``NONE``, ``HTML``,
+    ``MAIL_HEADER`` and ``LATEX``).
+    The escaping can also be set directly in the template (see `set_escape`_),
+    and setting the escape-format in the template overrides the one set here.
+
+    Note that you have to use keyword-parameters here!
+
+To *render* the template, simply *call* the template with your data as
+(keyword-)parameters. This returns the result in Unicode, and you should
+encode it depending on your needs. Of course, the same template can be
+rendered several times with different data.
+
+Example::
+
+    >>> import pyratemp
+    >>> t = pyratemp.Template(filename="test.html", data={"number": 1}, escape=pyratemp.HTML)
+    >>> result1 = t(person="Monty")
+    >>> result2 = t(person="Adams", number=42)
+    >>> print result1.encode("utf-8")
+    >>> print result2.encode("ascii", 'xmlcharrefreplace')
+
+Note that ``data`` (and the keyword-parameters when calling the template) can
+contain nearly anything: single variables, lists, other dictionaries, nested
+structures, functions and even classes. So **be careful** what you pass
+to the template. If you e.g. pass the Python-built-in-function ``open``
+to the template, your template will be able to open (and write) arbitrary
+files!
+
+-----------------------
+
+In addition, version 0.3.1/0.2.4 added a new file ``tools.py``, which eases
+the creation of html-files and mails.
+
+Example::
+
+    >>> from pyratemp.tools import html, mail
+
+    >>> result = html(template="test.tmpl", data={"number": 1}, xmlreplace=True)
+    >>> print result
+
+    >>> html(template="test.tmpl", data={"number": 1}, xmlreplace=True, filename="result.html")
+
+    >>> mail(maildir="outbox/", template="mail.tmpl", data={"from": "me@example.org"})
+
+
+Internal parts
+--------------
+As said before, pyratemp consists of several parts, which are independent:
+
+- an escaping-function (``escape()``)
+- a template-loader (``class LoaderString`` or ``class LoaderFile``)
+- a parser (``class Parser``)
+- a pseudo-sandboxed evaluator (``class EvalPseudoSandbox``)
+- a renderer (``class Renderer``)
+- a basic template-structure, e.g. used for macros/subtemplates
+  (``class TemplateBase``)
+
+All parts could even be used on their own, or modified (e.g. by creating
+subclasses) or replaced by an other implementation.
+Modified parts can then be used by setting the parameters ``loader_class``,
+``parser_class``, ``renderer_class``, ``eval_class`` or ``escape_func`` of
+``class Template``, or by creating a modified template-user-interface-class.
+
+Read the pyratemp-docstrings for details.
+
+escaping
+~~~~~~~~
+Currently, HTML-, e-mail-header- and LaTeX-escaping are implemented in
+the function ``escape()``. This may be extended in the future.
+
+Note that escaping is currently one of the most time-consuming parts when
+rendering a template.
+
+Loader
+~~~~~~
+There are two sources to "load" a template from: either directly from a
+string, or from a file. Since templates-from-files can include other templates,
+this "template-loading" is encapsulated into classes (``class LoaderString``
+and ``class LoaderFile``).
+
+These classes contain a function ``load(...)``, which actually loads the
+template and returns the result in Unicode.
+
+Inclusion of other templates (by using ``<!--(include)-->)``) is only possible
+when loading the template from a file, and (for simplicity and security) all
+included templates have to be in the same directory as the including template
+(see ``allowed_path`` of ``class LoaderFile``).
+
+Parser
+~~~~~~
+It's better, cleaner and even faster to parse the template first and afterwards
+separately render it (maybe multiple times).
+
+The parser (``class Parser``) analyzes the template-string, checks the syntax
+(and throws exceptions with detailed error-descriptions if there is an error),
+and generates a parse-tree. Since indentation is used for nesting in the
+template, the template can be completely parsed by using regexps, which
+makes parsing really fast and simple.
+
+Most of the parser-code is used to check for (syntax-)errors and to create
+error-messages.
+
+The resulting parse-tree is a recursive list, with the following elements:
+
+- ``("str", STRING)`` (for unprocessed template-data and "raw")
+- ``("sub", EXPR)`` (for unescaped substitution)
+- ``("esc", ESCAPEFORMAT, EXPR)`` (for escaped substitution)
+- ``("for", NAMETUPLE, ITEREXPR, [...])``
+- ``("if",   PARAM, [...])``
+- ``("elif", PARAM, [...])``
+- ``("else", PARAM, [...])``
+- ``("macro", PARAM, [...])``
+
+Examples (see `Quickstart`_):
+
+- parse-tree of ``"Hello @!name!@."``::
+
+    [('str', u'Hello '), ('esc', 1, u'name'), ('str', u'.')]
+
+- parse-tree of `example.html`_, formatted for readability::
+
+    [('str', u'<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"\n          "http://www.w3.org/TR/html4/loose.dtd">\n<html>\n<head>\n  <title>A simple example: '),
+     ('esc', 1, u'title'),
+     ('str', u'</title>\n</head>\n<body>\n  <h1>'),
+     ('esc', 1, u'title'),
+     ('str', u'</h1>\n  This is a simple example, demonstrating pyratemp:\n  \n  <ul>\n    \n    <li>'),
+     ('esc', 1, u'special_chars'),
+     ('str', u'</li>\n\n    <li>\n'),
+     ('if',  u'number==42',
+        [('str', u'        The Answer!\n')]),
+     ('elif', u'number==13',
+        [('str', u'        oh no!\n')]),
+     ('else',
+        [('str', u'        '),
+         ('esc', 1, u'number'),
+         ('str', u'\n')]),
+     ('str', u'    </li>\n\n    <li>a simple for loop: '),
+     ('for', (u'i',), u'range(1,10)',
+        [('str', u' '),
+         ('esc', 1, u'i'),
+         ('str', u' ')]),
+     ('str', u'</li>\n\n    <li>listing all enumerated elements of a list:\n      <ul>\n'),
+     ('for', (u'i', u'element'), u'enumerate(mylist)',
+        [('str', u'        <li>'),
+         ('esc', 1, u'i+1'),
+         ('str', u'. '),
+         ('esc', 1, u'element.upper()'),
+         ('str', u'</li>\n')]),
+     ('str', u'      </ul>\n    </li>\n\n'),
+     ('macro', u'myitem',
+        [('str', u'<li><strong>'),
+         ('esc', 1, u'item'),
+         ('str', u'</strong></li>')]),
+     ('str', u'    '),
+     ('esc', 1, u'myitem(item="foo")'),
+     ('str', u'\n    '),
+     ('esc', 1, u'myitem(item="bar")'),
+     ('str', u'\n\n  </ul>\n\n</body>\n</html>\n')]
+
+
+Evaluation
+~~~~~~~~~~
+pyratemp uses Python-expressions [#]_ in its templates.
+
+But since it is a really bad idea to directly embed unrestricted code into a
+template [#]_, pyratemp uses a "pseudo-sandbox" for evaluating the
+Python-expressions. This restricts the embedded expressions, so that the
+template-designer only has the necessary functionality and cannot do
+"bad things" by accident.
+
+This pseudo-sandbox is implemented in the ``class EvalPseudoSandbox``.
+It only allows a (safe) subset of the Python-builtins and adds some
+additional functions (``exists()``, ``default()``, ``setvar()`` and
+a dummy ``__import__()``; see `Expressions`_).
+It also forbids access to names beginning with ``_``, to prevent things
+like ``0 .__class__``, which could be used to break out of the sandbox.
+
+See docstring for details.
+
+*But note that this may not be a real sandbox!*
+Although I currently don't know *any* way to break out of this sandbox, and
+I think that it shouldn't be possible to break out (without passing in an
+unsafe function [#]_), I'm not absolutely sure about that.
+
+So, if you want to use pyratemp for "untrusted" templates, you should make
+sure that nothing bad can happen. There are different possible ways:
+
+- Approve that it's not possible to break out of the integrated
+  "pseudo-sandbox".
+- Make sure that nothing bad can happen even if someone breaks out of
+  the sandbox (e.g. by appropriate rights).
+- | Add a really sandboxed expression-evaluator, and use it instead of the
+    ``EvalPseudoSandbox`` class. This could even be done incrementally, by
+    first writing a simple evaluator which only supports string-substitution,
+    and then adding comparisons, arithmetics and other functionality as needed.
+  | But since such a sandboxed evaluator would increase the complexity and
+    probably would only support a subset of the Python-expressions, I did
+    not write such an evaluator yet.
+
+
+.. [#] Note that there is a difference between Python-expressions (`eval()`)
+       and Python-statements (`exec()`). pyratemp only uses `eval`.
+       (see also: `Expressions`_)
+.. [#] With unrestricted embedded python, bad things like accessing, reading
+       and modifying parts of the system (``open("/etc/passwd").read()`` or
+       worse) would be possible. In addition to that, unrestricted code would
+       also tempt the template-designer to break the model-view-separation.
+.. [#] Of course, you should not give the template a "bad" function with its
+       data. If you do something like ``t(badfunc=open)``, then the template
+       will of course be able to open arbitrary files...
+
+Renderer
+~~~~~~~~
+The renderer (``class Renderer``) takes a parse-tree and your data, evaluates
+all embedded expressions and control-structures, expands the macros, escapes
+special characters (and tries to prevent double-escapes) and returns the
+result as Unicode-string.
+
+TemplateBase
+~~~~~~~~~~~~
+The ``class TemplateBase`` on the one hand implements parts of the
+user-interface, on the other hand provides the functionality for
+user-defined macros in the template. Remember that a macro in the
+template is exactly the same as a (sub-)template!
+
+Compiler
+~~~~~~~~
+I also wrote a small (about 100 lines) experimental compiler which compiles
+the templates (or: the parse-trees) to pure Python-code. It's quite simple,
+and may even speed up the rendering a bit. But since pyratemp is already
+very fast, and compiling only has advantages if you render a template
+many times, I haven't developed the compiler any further.
+
+
+Usage notes/FAQ
+===============
+
+syntax errors
+-------------
+
+To check a pyratemp-template for syntax-errors, simply let pyratemp parse
+the template.
+You can do this e.g. with `pyratemp_tool`_ with ``-s`` and without any data::
+
+    $ pyratemp_tool.py -s TEMPLATEFILE(s)
+
+If there are syntax-errors, pyratemp raises a ``TemplateSyntaxError``, and
+pyratemp_tool displays a detailed error-message::
+
+    $ pyratemp_tool.py -s TEMPLATEFILE
+    file 'TEMPLATEFILE':
+      TemplateSyntaxError: line ##, col ##: ...
+
+
+fillout/render test
+-------------------
+
+For a complete test, you have to render the template. Of course you can do
+this in your application, with real data, but probably it's easier to test
+it outside of the application with some "dummy data".
+
+This again can be done by `pyratemp_tool`_. Simply create a JSON-file
+(or a YAML-file) with your dummy data, and invoke pyratemp_tool. If the
+JSON-/YAML-file contains all necessary data, the rendered template will
+be written to ``stdout``, e.g.::
+
+    $ pyratemp_tool.py -f example.json example.html
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+              "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <head>
+    ...
+
+Otherwise, if some data is missing (or invalid) or some expressions are
+invalid, pyratemp raises a ``TemplateRenderError`` and tells you what
+data is missing, e.g.::
+
+    $ pyratemp_tool.py -f dummydata.json example.html
+    file 'example.html':
+      TemplateRenderError: Cannot eval expression 'title' (NameError: name 'title' is not defined)
+
+whitespace handling
+-------------------
+If you need to remove some whitespace (e.g. a newline), you can put it into
+`comments`_, e.g. a ``#!`` at the end of a line removes the newline in the
+result.
+
+setting variables
+-----------------
+There's sometimes the wish to set variables in the template. But there's often
+a more elegant way to solve the problem without setting variables.
+
+For example, instead of::
+
+    <!--(for obj in arr)-->
+        @!i!@. @!obj!@
+        $!setvar("i", "i+1")!$ #!
+    <!--(end)-->
+
+better use::
+
+    <!--(for i,obj in enumerate(arr))-->
+        @!i!@. @!obj!@
+    <!--(end)-->
+
+But if you really need to set variables, you can use ``setvar()``
+(see `Expressions`_).
+
+capture output
+--------------
+To capture the output of a macro into a variable, you can also use
+``setvar()``::
+
+    <!--(macro mymacro)-->
+    ...
+    <!--(end)-->
+    $!setvar("myvar", "mymacro()")!$#!
+
+filters
+-------
+Some template-engines have so-called "filters", which are functions which
+process the contents of a whole block. This behaviour can be easily
+achieved with pyratemp, too::
+
+    <!--(macro myblock)-->
+    ...
+    <!--(end)-->
+    $!filter(myblock())!$
+
+select macro / overwrite macro
+------------------------------
+Macros can be overwritten, even based on a conditional. This may be useful
+if you want to globally change the output depending on some options.
+
+Example::
+
+    <!--(macro field)-->show_field $!param!$<!--(end)-->
+    <!--(macro input_field)-->input_field $!param!$<!--(end)-->
+
+    <!--(if x=="overwrite")-->
+      <!--(macro field)-->
+    @!input_field(param=param)!@
+      <!--(end)-->
+    <!--(end)-->
+
+    @!field(p=1)!@
+
+evaluation order / caches
+-------------------------
+The expressions, macros etc. are evaluated at *rendering*-time, not
+at define-/parse-time.
+
+So, e.g. a macro is evaluated each time it is called/used. If you want
+something to be evaluated only once, no matter how often it is used,
+you may:
+
+- store the evaluation-result in a variable with ``setvar()``
+  and then use the variable
+- write a cache-function in Python and use it in your template
+
+using functions which import other modules
+------------------------------------------
+Some Python-functions, which may be useful in the template, try to import
+other modules, e.g. ``datetime.strftime`` imports ``time``. But importing
+modules is of course not allowed in the (pseudo-)sandbox, so this fails.
+
+The best solution would be to avoid these functions and e.g. use
+``time.strftime`` instead of ``datetime.strftime``.
+
+| For the cases where this is not possible, the pyratemp-pseudo-sandbox
+  contains a dummy-import-function, which allows to virtually import modules
+  which are already accessible from within the sandbox.
+| But note that then the template maybe needs to have access to the
+  complete "imported" module (in the example: complete ``time`` module,
+  plus probably large parts of the ``datetime`` module),
+  which might be a *security risk* and break the sandbox!
+| See the docstring of ``EvalPseudoSandbox.f_import`` for details.
+
+shortcuts / template-syntax-extension
+-------------------------------------
+Sometimes shortcuts for often-used things might be useful.
+Therefore, you can:
+
+- | Define macros.
+  | This is probably the most common way.
+
+- | Define a Python-function and pass it to the template.
+  | (But take care that you don't break the model-view-separation!)
+
+- | Extend the template-syntax. [advanced]
+  | This essentially modifies the template-engine, and you should only
+    do this if you are *really* sure that you want it, and that the
+    alternatives do not work in your case!
+
+  The simplest way to introduce new syntax probably is to load the
+  template-file, map your new syntax (e.g. with regexps) to normal
+  pyratemp-syntax, and let pyratemp do the rest.
+
+  Example: The new syntax ``@x!...!x@`` should be added, which should
+  do the same as ``@!myfunc(...)!@``::
+
+    import re
+    import pyratemp
+
+    class MyLoader(pyratemp.LoaderFile):
+        my_replacement = re.compile(r'@x!\s*(.*?)\s*!x@')
+
+        load(self, filename):
+            u = pyratemp.LoaderFile(self, filename)
+            u = my_replacement.sub(r'@! myfunc("\1") !@', u)
+            return u
+
+    t = pyratemp.Template(..., loader_class=MyLoader)
+
+
+return data from the template to the caller
+-------------------------------------------
+In some rare cases, it might be useful to return data (e.g. a returncode) from
+the template to the caller. This is possible with pyratemp. *But note that this
+can easily break the model-view-separation, so think twice about it before
+using it, and use it with care!*
+
+Example::
+
+    import pyratemp
+
+    retdict = {}
+    def setreturn(name, value):
+        """Quick-hack to export data from the template to the code.
+        """
+        retdict[name] = value
+        return ""
+
+    t = pyratemp.Template("""Return myreturn=True to the caller: @!setreturn("myreturn", True)!@""")
+    t(setreturn=setreturn)
+    print("retdict: %s" % retdict) 
+
+
+Tools
+=====
+
+pyratemp_tool
+-------------
+
+``pyratemp_tool.py`` is a simple command-line-interface to pyratemp which
+can (a) syntax-check the templates and (b) fill/render templates with the data
+from JSON- or YAML-files or from key-value-pairs from the command-line.
+Errors/messages are print to stderr, rendered templates are written to
+``stdout`` in UTF-8.
+
+By default, HTML-escaping is used for ``*.html`` and ``*.htm``, LaTeX-escaping
+is used for ``*.tex`` and no escaping is used for other files. Use `set_escape`_
+if you need a different encoding.
+
+Two additional variables are defined: ``date`` and ``mtime_CCYYMMDD``,
+both containing the current date in the "YYYY-MM-DD"-format.
+
+Usage (see also ``pyratemp_tool.py --help`` and ``pydoc pyratemp_tool``)::
+
+    pyratemp_tool.py [-s] <-d NAME=VALUE> <-f DATAFILE [-N NAME] [-n NR_OF_ENTRY]> [--xml] TEMPLATEFILES
+        -s      syntax-check only (don't render the template)
+        -d      define variables (these also override the values from files)
+        -f      use variables from a JSON/YAML file
+        -n      use nth entry of the JSON/YAML file
+                (JSON: n-th element of the root-array, YAML: n-th entry)
+        -N      namespace for variables from the JSON/YAML file
+        --xml   encode output as ASCII+xmlcharrefreplace (instead of utf-8)
+
+For the 2nd example of `Quickstart`_, a JSON-file might look like::
+
+    {
+      "title" : "filling JSON into pyratemp",
+      "special_chars" : "µ<ß€",
+      "number" : 13,
+      "mylist" : [ "JSON", "YAML", "manually-defined variables" ]
+    }
+
+To fill the template, with using a different value for ``number`` than
+in the JSON-file, invoke pyratemp_tool as follows::
+
+    $ pyratemp_tool.py -d number=42 -f example.json example.html > filled.html
+
+Now, the result is in ``filled.html``
+
+
+Download
+========
+
+pyratemp is used in several applications for several years now without any
+problems and it's quite stable. But it has been tested only by a few people,
+so there may still be bugs in it. Please report any problems.
+
+pyratemp consists of a single python-file, which you can directly copy
+into some directory where ``import`` can find it, e.g. the same directory
+as your other code.
+
+If you want to be informed about new releases, bugfixes etc., please subscribe
+to the `pyratemp-announce`_ list.
+
+:Author:        Roland Koebler (rk *at* simple-is-better *dot* org)
+:Release:       0.3.2
+:License:       MIT-like
+:Requirements:  Python >=2.6 / 3.x, optionally Python 2.x [#]_
+:Download:      `<pyratemp-0.3.2.tgz>`_ (52 kB) (`view contents`_)
+
+.. _view contents:     pyratemp-latest/
+.. _example.html: pyratemp-latest/example.html
+.. _example.json: pyratemp-latest/example.json
+.. [#] for Python <= 2.5, use version 0.2.5: `<pyratemp-0.2.5.tgz>`_
+
+Contact
+=======
+
+Please **don't hesitate** to contact me if you find any bugs, have any
+questions, comments, suggestions etc.! It would also be nice to drop
+me a note if you are simply using pyratemp.
+
+**author:**
+    | *rk at simple-is-better.org*
+    | (in English or German)
+
+There is also a pyratemp-announcement-list and a pyratemp-mailinglist:
+
+.. _pyratemp-announce:
+
+**announcements:**
+    | *pyratemp-announce at lists.simple-is-better.org*
+    | (new releases, bugfixes etc.)
+
+    | subscribe:   send a mail to pyratemp-announce-subscribe@lists.simple-is-better.org
+    | unsubscribe: send a mail to pyratemp-announce-unsubscribe@lists.simple-is-better.org
+
+**mailinglist:**
+    | *pyratemp at lists.simple-is-better.org*
+    | (currently completely moderated)
+
+    Announcements will also be posted to this list, so if you subscribed to
+    this list, you don't need to subscribe to pyratemp-announce.
+
+    | subscribe:   send a mail to pyratemp-subscribe@lists.simple-is-better.org
+    | unsubscribe: send a mail to pyratemp-unsubscribe@lists.simple-is-better.org
+

@@ -1,2 +1,4 @@
+*.pb.*
+*.gch
 /.pioenvs
 /.piolibdeps

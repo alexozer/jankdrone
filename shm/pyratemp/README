@@ -1,0 +1,46 @@
+pyratemp
+========
+
+pyratemp is a small, simple and powerful template-engine for python.
+
+For documentation, please read pyratemp.txt or pyratemp.html and the
+pyratemp-docstrings.
+
+For more documentation of the background of pyratemp, some thoughts
+about template-engines in general, benchmarks and comparisons, see
+http://www.simple-is-better.org/template/
+
+:Website:      http://www.simple-is-better.org/template/pyratemp.html
+:Author:       Roland Koebler <rk at simple-is-better dot org>
+:Version:      0.3.2
+:Requirements: Python >=2.6 / 3.x
+
+Files:
+    - README
+    - NEWS
+    - LICENSE
+
+    - pyratemp.py: the template-engine
+    - tools.py: some convenience functions for pyratemp
+    - pyratemp_tool.py: a small commandline-interface for the template-engine
+    - pyratemp_python3_doctest.txt: pyratempt-doctests for Python 3
+    - __init__.py: small wrapper so you can "import the directory"
+    - setup.py: distutils-setup.py
+
+    - pyratemp.txt:  the documentation (in reStructuredText)
+    - pyratemp.html: the documentation, converted to html
+    - example.html: example-template from the documentation
+    - example.json: example-data from the documentation
+
+Installation:
+    - use disutils, e.g.
+      ``python ./setup.py install`` or
+      ``python ./setup.py install --user``
+    - or simply copy or symlink this directory (or only pyratemp.py)
+      to a directory which is found by Python's "import", e.g.
+      into your project-directory
+
+Test::
+
+    ./pyratemp_tool.py -f example.json example.html
+

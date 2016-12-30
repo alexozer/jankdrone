@@ -1,0 +1,115 @@
+pyratemp 0.3.2 (2013-09-17)
+    - default() now also catches AttributeError
+
+pyratemp 0.3.1 (2013-06-17)
+    - BUGFIX: prevent pseudo-sandbox-breakouts via lambda/nested code
+
+    - added tools.py to simplify html-/mail-creation
+
+    - added functions to the eval-pseudo-sandbox:
+      set(), isinstance(), dir()
+    - make list-comprehensions work in the template
+      ([.. for .. in ..])
+    - make lambda work in parameters with user-defined functions
+      (sorted(..., key=lambda x: myf(x[1])))
+    - improved error-message for not-allowed-names
+
+pyratemp 0.2.5 (2013-09-17)
+    Backport of 0.3.2 to Python <=2.5
+
+pyratemp 0.2.4 (2013-06-17)
+    Backport of 0.3.1 to Python <=2.5
+
+pyratemp 0.3.0 (2013-04-03)
+    Update notice from 0.2.0:
+      Only use this version for Python >=2.6 / 3.x.
+      No changes in your templates and your Python-code should be necessary,
+      except if you use cmp() / xrange() in your templates.
+      Main changes were: Python 3 support, LaTeX/mail-header escaping,
+      renamed yaml2pyratemp.py to pyratemp_tool.py, distutils, bugfixes.
+
+    - added Python 3 support
+    - removed Python <=2.5 support
+    - template-functions: added bytes(), removed cmp() and xrange()
+
+    - escaping: completed LaTeX-escaping
+    - escaping: split template-escape() (f_escape()) from internal escape()
+      (internal escape does not accept strings as format-parameter and
+      doesn't do any unicode-conversion; this is left to f_escape())
+
+    - yaml2pyratemp.py renamed to pyratemp_tool.py
+    - pyratemp_tool.py: added --xml to encode output as ASCII + XML-replace
+
+    - added installation via distutils
+    - documentation
+
+pyratemp 0.2.3 (2013-04-03)
+    Backport of 0.3.0 to Python <=2.5
+
+pyratemp 0.2.2 (2011-05-02)
+    - template-functions: default() now also catches TypeError
+
+pyratemp 0.3-pre1 (2010-07-17)
+    experimental Python 3 version
+
+pyratemp 0.2.1 (2010-07-09)
+    - added escape()-function and mail-header-escaping:
+      - escape(s, format=HTML) can now be used in the templates
+      - escape now also accepts strings as format-parameter
+        (e.g. "HTML", "LATEX", "MAIL_HEADER")
+      - added escaping MAIL_HEADER
+    - escape() now always returns unicode
+    - fixed a error-message-bug, which caused that some error-messages
+      displayed an incorrect error-position
+
+pyratemp 0.2.0 (2010-06-15)
+  Update notice from 0.1.x:
+    no changes to your templates should be necessary,
+    and you only need to modify your Python-code if you have used
+    the classes StringLoader, FileLoader, PseudoSandbox, TemplateEval
+    or TemplateBase directly.
+
+  - added functionality:
+    - variables can now be set in the template ("EvalPseudoSandbox.f_setvar()")
+    - "dummy-import" ("EvalPseudoSandbox.f_import()")
+    - modularized for better extensibility
+
+  - Python-code syntax changes:
+    - renamed class StringLoader to LoaderString
+    - renamed class FileLoader to LoaderFile
+    - unified PseudoSandbox + TemplateEval in EvalPseudoSandbox
+    - changed parameter-order of TemplateBase
+
+  - template-syntax minor improvements:
+    - check that macro-names are \w+
+    - comments (#!...) are now allowed after multi-line-block-tags
+
+  - fixed a minor bug which caused that a function registered in one
+    eval-sandbox-instance was available in all instances
+
+  - review, documentation, cleanup
+
+pyratemp 0.1.5 (2009-01-20)
+  - fixed a bug (in the parser) which caused that "#!" at the end-of-line
+    directly before a single-line-block at the beginning of the next line
+    did not remove the newline
+    (single-line-blocks now only consume [ \t] instead of \s as P<sSpace>)
+
+pyratemp 0.1.4 (2008-12-21)
+  - fixed a bug (in the parser) which caused that substitutions/blocks at the
+    beginning of a template after some whitespace raised an exception
+
+pyratemp 0.1.3 (2008-12-20)
+  - fixed a bug (in the parser) which caused that empty macros raised an
+    exception
+
+pyratemp 0.1.2 (2008-12-19)
+  - fixed a problem which caused that single-line-blocks did not work
+    after some spaces at the beginning of a line
+  - documentation update
+  - removed template.txt/template.html from release
+  - files renamed according to the "Software Release Practice HOWTO"
+
+pyratemp 0.1 (2008-12-14)
+  - initial release
+

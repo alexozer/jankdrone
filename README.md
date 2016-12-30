@@ -4,7 +4,6 @@ The jankest quadcopter the world has ever seen.
 # Dependencies
 - platformio
 - Python 3
-	- pyratemp
 
 # TODO
 - [x] Shared memory
@@ -15,5 +14,5 @@ The jankest quadcopter the world has ever seen.
 	- [x] Server
 	- [ ] Client
 - [x] IMU readings
-- [ ] Controller
+- [x] Controller
 - [ ] LEDs

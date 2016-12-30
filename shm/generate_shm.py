@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pyratemp
+from pyratemp import pyratemp
 import shm
 
 templates = [('../copter/src/shm.cpp.template', '../copter/src/shm.cpp')]

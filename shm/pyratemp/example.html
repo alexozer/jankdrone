@@ -1,0 +1,47 @@
+<!--(set_escape)-->
+    html
+<!--(end)-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+          "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>A simple example: @!title!@</title>
+</head>
+<body>
+  <h1>@!title!@</h1>
+  This is a simple example, demonstrating pyratemp:
+  #! Comments don't appear in the result !#
+  <ul>
+
+    <li>@!special_chars!@</li>
+
+    <li>
+      <!--(if number==42)-->
+        The Answer!
+      <!--(elif number==13)-->
+        oh no!
+      <!--(else)-->
+        @!number!@
+      <!--(end)-->
+    </li>
+
+    <li>a simple for loop: <!--(for i in range(1,10))--> @!i!@ <!--(end)--></li>
+
+    <li>listing all enumerated elements of a list:
+      <ul>
+      <!--(for i,element in enumerate(mylist))-->
+        <li>@!i+1!@. @!element.upper()!@</li>
+      <!--(end)-->
+      </ul>
+    </li>
+
+<!--(macro myitem)-->
+<li><strong>@!item!@</strong></li>
+<!--(end)-->
+    @!myitem(item="foo")!@
+    @!myitem(item="bar")!@
+
+  </ul>
+
+</body>
+</html>
