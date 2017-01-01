@@ -1,2 +1,2 @@
-lib/* linguist-vendored
-vendor/* linguist-vendored
+**/lib/* linguist-vendored
+**/vendor/* linguist-vendored
