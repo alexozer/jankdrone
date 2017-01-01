@@ -203,34 +203,9 @@ std::vector<Shm::Group*> Shm::groups() {
 
 Shm::Shm(std::vector<Group> groups) {
 	for (auto& g : groups) {
-		for (auto var : g.vars()) {
-			int tag = var->tag();
-			auto it = m_tagMap.find(tag);
-			if (it != m_tagMap.end()) {
-				Logger::fatal("Duplicate tag {}", tag);
-			} else {
-				m_tagMap.emplace(tag, var);
-			}
+		auto& placedG = m_groups.emplace(g.name(), g).first->second;
+		for (auto var : placedG.vars()) {
+			m_tagMap.emplace(var->tag(), var);
 		}
-		m_groups.emplace(g.name(), g);
 	}
-}
-
-	<!--(macro CVALUE)-->
-<!--(if value is True)-->true<!--(elif value is False)-->false<!--(else)-->$!value!$<!--(end)-->
-	<!--(end)-->
-
-Shm& Shm::get() {
-	static Shm shm{{
-		<!--(for g_name, g_vars in sorted(shm.items()))-->
-		{"$!g_name!$", {
-			<!--(for v_name, v_info in sorted(g_vars.items()))-->
-			{"$!v_name!$", $!CVALUE(value=v_info.value)!$, $!v_info.tag!$},
-			<!--(end)-->
-		}},
-
-		<!--(end)-->
-	}};
-
-	return shm;
 }
