@@ -11,11 +11,11 @@ The jankest quadcopter the world has ever seen.
 - [x] Shared memory
 - [x] Threading
 - [x] Logging
-- [ ] Bluetooth remote control
+- [x] Bluetooth remote control
 	- [x] Protocol
 	- [x] Server
 	- [x] Client
-	- [ ] Handheld controller
+	- [x] Handheld controller
 - [x] IMU readings
 - [x] Controller
 - [ ] LEDs
