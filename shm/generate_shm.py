@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from pyratemp import pyratemp
+from lib.pyratemp import pyratemp
 import shm
 
 templates = [

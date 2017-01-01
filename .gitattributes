@@ -1,2 +1,2 @@
-/copter/lib/* linguist-vendored
-/lib/* linguist-vendored
+lib/* linguist-vendored
+vendor/* linguist-vendored
