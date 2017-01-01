@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Adafruit_BLE_UART.h>
 #include <pb_decode.h>
-#include "shm_update.pb.h"
+#include "shm.pb.h"
 
 class Remote {
 	public:

@@ -36,6 +36,18 @@ void printMotors() {
 	Serial.println();
 }
 
+void printLeds() {
+	static auto front = Shm::var("leds.front"),
+				back = Shm::var("leds.back"),
+				left = Shm::var("leds.left"),
+				right = Shm::var("leds.right");
+	for (auto v : {front, back, left, right}) {
+		Serial.print(v->getInt());
+		if (v != right) Serial.print(", ");
+	}
+	Serial.println();
+}
+
 // Statically-allocate everything inside setup() so we can set up serial first
 void setup() {
 	Serial.begin(38400);
@@ -46,22 +58,18 @@ void setup() {
 	static Led led;
 	static ThreadController threadController({
 			Thread(std::bind(&Led::operator(), led), 15),
-			Thread(std::bind(&Led::fade, led), 15),
+			//Thread(std::bind(&Led::fade, led), 15),
 			Thread(&MPU9250::loop, 0),
 			Thread(Remote(), 0),
 			Thread(Controller(), 1),
 			//Thread(&printOrientation, 100),
 			Thread(&printMotors, 100),
+			//Thread(&printLeds, 100),
 			});
 
 	Logger::info("Initializing MPU9250...");
 	MPU9250::setup();
 	Logger::info("Done initializing MPU9250");
-
-	Logger::info("Enabling controller");
-	Shm::var("controller.enabled")->set(true);
-	Logger::info("Adding some vertical force");
-	Shm::var("controller.verticalForce")->set(50);
 
 	while (true) threadController();
 }

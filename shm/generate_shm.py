@@ -3,7 +3,10 @@
 from pyratemp import pyratemp
 import shm
 
-templates = [('../copter/src/shm.cpp.template', '../copter/src/shm.cpp')]
+templates = [
+    ('../copter/src/shmdef.cpp.template', '../copter/src/shmdef.cpp'),
+    ('../client/shmdef.go.template', '../client/shmdef.go'),
+]
 
 for t in templates:
     pt = pyratemp.Template(filename=t[0])

@@ -3,6 +3,10 @@ from collections import namedtuple
 Var = namedtuple('Var', ['value', 'tag'])
 
 untagged_shm = {
+    'switches': {
+        'softKill': True
+    },
+
     'motors': {
         'front': 0.0,
         'left': 0.0,

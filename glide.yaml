@@ -1,0 +1,5 @@
+package: github.com/alexozer/jankcopter
+import:
+- package: github.com/paypal/gatt
+- package: github.com/tarm/serial
+- package: github.com/golang/protobuf

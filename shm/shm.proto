@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-message ShmUpdate {
+message ShmMsg {
 	message Var {
 		required int32 tag = 1;
 		optional int32 intValue = 2;

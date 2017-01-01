@@ -4,6 +4,8 @@ The jankest quadcopter the world has ever seen.
 # Dependencies
 - platformio
 - Python 3
+- Go
+	- [protobuf](https://github.com/golang/protobuf)
 
 # TODO
 - [x] Shared memory
@@ -12,7 +14,8 @@ The jankest quadcopter the world has ever seen.
 - [ ] Bluetooth remote control
 	- [x] Protocol
 	- [x] Server
-	- [ ] Client
+	- [x] Client
+	- [ ] Handheld controller
 - [x] IMU readings
 - [x] Controller
 - [ ] LEDs

@@ -61,18 +61,18 @@ void Remote::readStream(Stream* stream) {
 		return;
 	}
 
-	ShmUpdate update = ShmUpdate_init_zero;
+	ShmMsg update = ShmMsg_init_zero;
 	auto pbUpdateStream = pb_istream_from_buffer(m_messageBuffer, bytesRead);
 	update.var = {&decodeVar, nullptr};
-	if (!pb_decode_noinit(&pbUpdateStream, ShmUpdate_fields, &update)) {
+	if (!pb_decode_noinit(&pbUpdateStream, ShmMsg_fields, &update)) {
 		Logger::error("Failed to decode remote message: {}",
 				PB_GET_ERROR(&pbUpdateStream));
 	}
 }
 
 bool Remote::decodeVar(pb_istream_t* stream, const pb_field_t* field, void** arg) {
-	ShmUpdate_Var var = ShmUpdate_Var_init_zero;
-	if (!pb_decode_noinit(stream, ShmUpdate_Var_fields, &var)) {
+	ShmMsg_Var var = ShmMsg_Var_init_zero;
+	if (!pb_decode_noinit(stream, ShmMsg_Var_fields, &var)) {
 		Logger::error("Failed to decode remote variable: {}",
 				PB_GET_ERROR(stream));
 		return false;
