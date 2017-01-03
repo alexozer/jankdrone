@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 '''Generate header file for nanopb from a ProtoBuf FileDescriptorSet.'''
-nanopb_version = "nanopb-0.3.6"
+nanopb_version = "nanopb-0.3.7"
 
 import sys
 import re
@@ -241,6 +241,11 @@ class Field:
         self.enc_size = None
         self.ctype = None
 
+        self.inline = None
+        if field_options.type == nanopb_pb2.FT_INLINE:
+            field_options.type = nanopb_pb2.FT_STATIC
+            self.inline = nanopb_pb2.FT_INLINE
+
         # Parse field options
         if field_options.HasField("max_size"):
             self.max_size = field_options.max_size
@@ -253,16 +258,18 @@ class Field:
 
         # Check field rules, i.e. required/optional/repeated.
         can_be_static = True
-        if desc.label == FieldD.LABEL_REQUIRED:
-            self.rules = 'REQUIRED'
-        elif desc.label == FieldD.LABEL_OPTIONAL:
-            self.rules = 'OPTIONAL'
-        elif desc.label == FieldD.LABEL_REPEATED:
+        if desc.label == FieldD.LABEL_REPEATED:
             self.rules = 'REPEATED'
             if self.max_count is None:
                 can_be_static = False
             else:
                 self.array_decl = '[%d]' % self.max_count
+        elif field_options.HasField("proto3"):
+            self.rules = 'SINGULAR'
+        elif desc.label == FieldD.LABEL_REQUIRED:
+            self.rules = 'REQUIRED'
+        elif desc.label == FieldD.LABEL_OPTIONAL:
+            self.rules = 'OPTIONAL'
         else:
             raise NotImplementedError(desc.label)
 
@@ -319,7 +326,12 @@ class Field:
         elif desc.type == FieldD.TYPE_BYTES:
             self.pbtype = 'BYTES'
             if self.allocation == 'STATIC':
-                self.ctype = self.struct_name + self.name + 't'
+                # Inline STATIC for BYTES is like STATIC for STRING.
+                if self.inline:
+                    self.ctype = 'pb_byte_t'
+                    self.array_decl += '[%d]' % self.max_size
+                else:
+                    self.ctype = self.struct_name + self.name + 't'
                 self.enc_size = varint_max_size(self.max_size) + self.max_size
             elif self.allocation == 'POINTER':
                 self.ctype = 'pb_bytes_array_t'
@@ -359,7 +371,7 @@ class Field:
 
     def types(self):
         '''Return definitions for any special types this field might need.'''
-        if self.pbtype == 'BYTES' and self.allocation == 'STATIC':
+        if self.pbtype == 'BYTES' and self.allocation == 'STATIC' and not self.inline:
             result = 'typedef PB_BYTES_ARRAY_T(%d) %s;\n' % (self.max_size, self.ctype)
         else:
             result = ''
@@ -388,7 +400,10 @@ class Field:
             if self.pbtype == 'STRING':
                 inner_init = '""'
             elif self.pbtype == 'BYTES':
-                inner_init = '{0, {0}}'
+                if self.inline:
+                    inner_init = '{0}'
+                else:
+                    inner_init = '{0, {0}}'
             elif self.pbtype in ('ENUM', 'UENUM'):
                 inner_init = '(%s)0' % self.ctype
             else:
@@ -400,9 +415,15 @@ class Field:
             elif self.pbtype == 'BYTES':
                 data = ['0x%02x' % ord(c) for c in self.default]
                 if len(data) == 0:
-                    inner_init = '{0, {0}}'
+                    if self.inline:
+                        inner_init = '{0}'
+                    else:
+                        inner_init = '{0, {0}}'
                 else:
-                    inner_init = '{%d, {%s}}' % (len(data), ','.join(data))
+                    if self.inline:
+                        inner_init = '{%s}' % ','.join(data)
+                    else:
+                        inner_init = '{%d, {%s}}' % (len(data), ','.join(data))
             elif self.pbtype in ['FIXED32', 'UINT32']:
                 inner_init = str(self.default) + 'u'
             elif self.pbtype in ['FIXED64', 'UINT64']:
@@ -454,6 +475,8 @@ class Field:
         elif self.pbtype == 'BYTES':
             if self.allocation != 'STATIC':
                 return None # Not implemented
+            if self.inline:
+                array_decl = '[%d]' % self.max_size
 
         if declaration_only:
             return 'extern const %s %s_default%s;' % (ctype, self.struct_name + self.name, array_decl)
@@ -481,7 +504,7 @@ class Field:
         result += '%3d, ' % self.tag
         result += '%-8s, ' % self.pbtype
         result += '%s, ' % self.rules
-        result += '%-8s, ' % self.allocation
+        result += '%-8s, ' % (self.allocation if not self.inline else "INLINE")
         result += '%s, ' % ("FIRST" if not prev_field_name else "OTHER")
         result += '%s, ' % self.struct_name
         result += '%s, ' % self.name
@@ -507,8 +530,8 @@ class Field:
         '''Determine if this field needs 16bit or 32bit pb_field_t structure to compile properly.
         Returns numeric value or a C-expression for assert.'''
         check = []
-        if self.pbtype == 'MESSAGE':
-            if self.rules == 'REPEATED' and self.allocation == 'STATIC':
+        if self.pbtype == 'MESSAGE' and self.allocation == 'STATIC':
+            if self.rules == 'REPEATED':
                 check.append('pb_membersize(%s, %s[0])' % (self.struct_name, self.name))
             elif self.rules == 'ONEOF':
                 if self.anonymous:
@@ -516,6 +539,9 @@ class Field:
                 else:
                     check.append('pb_membersize(%s, %s.%s)' % (self.struct_name, self.union_name, self.name))
             else:
+                check.append('pb_membersize(%s, %s)' % (self.struct_name, self.name))
+        elif self.pbtype == 'BYTES' and self.allocation == 'STATIC':
+            if self.max_size > 251:
                 check.append('pb_membersize(%s, %s)' % (self.struct_name, self.name))
 
         return FieldMaxSize([self.tag, self.max_size, self.max_count],
@@ -594,6 +620,7 @@ class ExtensionRange(Field):
         self.default = None
         self.max_size = 0
         self.max_count = 0
+        self.inline = None
 
     def __str__(self):
         return '    pb_extension_t *extensions;'
@@ -671,6 +698,7 @@ class OneOf(Field):
         self.default = None
         self.rules = 'ONEOF'
         self.anonymous = False
+        self.inline = None
 
     def add_field(self, field):
         if field.allocation == 'CALLBACK':
@@ -1045,7 +1073,10 @@ class ProtoFile:
         else:
             yield '/* Generated by %s at %s. */\n\n' % (nanopb_version, time.asctime())
 
-        symbol = make_identifier(headername)
+        if self.fdesc.package:
+            symbol = make_identifier(self.fdesc.package + '_' + headername)
+        else:
+            symbol = make_identifier(headername)
         yield '#ifndef PB_%s_INCLUDED\n' % symbol
         yield '#define PB_%s_INCLUDED\n' % symbol
         try:
@@ -1324,6 +1355,9 @@ def get_nanopb_suboptions(subdesc, options, name):
         if fnmatch(dotname, namemask):
             Globals.matched_namemasks.add(namemask)
             new_options.MergeFrom(options)
+
+    if hasattr(subdesc, 'syntax') and subdesc.syntax == "proto3":
+        new_options.proto3 = True
 
     # Handle options defined in .proto
     if isinstance(subdesc.options, descriptor.FieldOptions):

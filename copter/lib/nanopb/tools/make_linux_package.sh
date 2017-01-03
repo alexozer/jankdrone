@@ -42,6 +42,9 @@ exec "\$SCRIPTDIR/protoc.bin" "\$@"
 EOF
 chmod +x $DEST/generator-bin/protoc
 
+# Remove debugging symbols to reduce size of package
+( cd $DEST/generator-bin; strip *.so *.so.* )
+
 # Tar it all up
 ( cd dist; tar -czf $VERSION.tar.gz $VERSION )
 

@@ -46,7 +46,7 @@
 
 /* Version of the nanopb library. Just in case you want to check it in
  * your own program. */
-#define NANOPB_VERSION nanopb-0.3.6
+#define NANOPB_VERSION nanopb-0.3.7
 
 /* Include all the system headers needed by nanopb. You will need the
  * definitions of the following:
@@ -170,8 +170,14 @@ typedef uint_least8_t pb_type_t;
  * The field contains a pointer to pb_extension_t */
 #define PB_LTYPE_EXTENSION 0x08
 
+/* Byte array with inline, pre-allocated byffer.
+ * data_size is the length of the inline, allocated buffer.
+ * This differs from PB_LTYPE_BYTES by defining the element as
+ * pb_byte_t[data_size] rather than pb_bytes_array_t. */
+#define PB_LTYPE_FIXED_LENGTH_BYTES 0x09
+
 /* Number of declared LTYPES */
-#define PB_LTYPES_COUNT 9
+#define PB_LTYPES_COUNT 0x0A
 #define PB_LTYPE_MASK 0x0F
 
 /**** Field repetition rules ****/
@@ -407,6 +413,10 @@ struct pb_extension_s {
     pb_delta(st, has_ ## m, m), \
     pb_membersize(st, m), 0, ptr}
 
+#define PB_SINGULAR_STATIC(tag, st, m, fd, ltype, ptr) \
+    {tag, PB_ATYPE_STATIC | PB_HTYPE_OPTIONAL | ltype, \
+    fd, 0, pb_membersize(st, m), 0, ptr}
+
 /* Repeated fields have a _count field and also the maximum number of entries. */
 #define PB_REPEATED_STATIC(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_STATIC | PB_HTYPE_REPEATED | ltype, \
@@ -415,6 +425,19 @@ struct pb_extension_s {
     pb_membersize(st, m[0]), \
     pb_arraysize(st, m), ptr}
 
+#define PB_REQUIRED_INLINE(tag, st, m, fd, ltype, ptr) \
+    {tag, PB_ATYPE_STATIC | PB_HTYPE_REQUIRED | PB_LTYPE_FIXED_LENGTH_BYTES, \
+    fd, 0, pb_membersize(st, m), 0, ptr}
+
+/* Optional fields add the delta to the has_ variable. */
+#define PB_OPTIONAL_INLINE(tag, st, m, fd, ltype, ptr) \
+    {tag, PB_ATYPE_STATIC | PB_HTYPE_OPTIONAL | PB_LTYPE_FIXED_LENGTH_BYTES, \
+    fd, \
+    pb_delta(st, has_ ## m, m), \
+    pb_membersize(st, m), 0, ptr}
+
+/* INLINE does not support REPEATED fields. */
+
 /* Allocated fields carry the size of the actual data, not the pointer */
 #define PB_REQUIRED_POINTER(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_POINTER | PB_HTYPE_REQUIRED | ltype, \
@@ -422,6 +445,11 @@ struct pb_extension_s {
 
 /* Optional fields don't need a has_ variable, as information would be redundant */
 #define PB_OPTIONAL_POINTER(tag, st, m, fd, ltype, ptr) \
+    {tag, PB_ATYPE_POINTER | PB_HTYPE_OPTIONAL | ltype, \
+    fd, 0, pb_membersize(st, m[0]), 0, ptr}
+
+/* Same as optional fields*/
+#define PB_SINGULAR_POINTER(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_POINTER | PB_HTYPE_OPTIONAL | ltype, \
     fd, 0, pb_membersize(st, m[0]), 0, ptr}
 
@@ -439,6 +467,10 @@ struct pb_extension_s {
 #define PB_OPTIONAL_CALLBACK(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_CALLBACK | PB_HTYPE_OPTIONAL | ltype, \
     fd, 0, pb_membersize(st, m), 0, ptr}
+
+#define PB_SINGULAR_CALLBACK(tag, st, m, fd, ltype, ptr) \
+    {tag, PB_ATYPE_CALLBACK | PB_HTYPE_OPTIONAL | ltype, \
+    fd, 0, pb_membersize(st, m), 0, ptr}
     
 #define PB_REPEATED_CALLBACK(tag, st, m, fd, ltype, ptr) \
     {tag, PB_ATYPE_CALLBACK | PB_HTYPE_REPEATED | ltype, \
@@ -453,6 +485,8 @@ struct pb_extension_s {
 
 #define PB_OPTEXT_POINTER(tag, st, m, fd, ltype, ptr) \
     PB_OPTIONAL_POINTER(tag, st, m, fd, ltype, ptr)
+
+/* INLINE does not support OPTEXT. */
 
 #define PB_OPTEXT_CALLBACK(tag, st, m, fd, ltype, ptr) \
     PB_OPTIONAL_CALLBACK(tag, st, m, fd, ltype, ptr)
@@ -485,7 +519,7 @@ struct pb_extension_s {
  *                 FLOAT, INT32, INT64, MESSAGE, SFIXED32, SFIXED64
  *                 SINT32, SINT64, STRING, UINT32, UINT64 or EXTENSION
  * - Field rules:  REQUIRED, OPTIONAL or REPEATED
- * - Allocation:   STATIC or CALLBACK
+ * - Allocation:   STATIC, INLINE, or CALLBACK
  * - Placement: FIRST or OTHER, depending on if this is the first field in structure.
  * - Message name
  * - Field name
@@ -510,6 +544,8 @@ struct pb_extension_s {
     {tag, PB_ATYPE_POINTER | PB_HTYPE_ONEOF | ltype, \
     fd, pb_delta(st, which_ ## u, u.m), \
     pb_membersize(st, u.m[0]), 0, ptr}
+
+/* INLINE does not support ONEOF. */
 
 #define PB_ONEOF_FIELD(union_name, tag, type, rules, allocation, placement, message, field, prevfield, ptr) \
         PB_ONEOF_ ## allocation(union_name, tag, message, field, \

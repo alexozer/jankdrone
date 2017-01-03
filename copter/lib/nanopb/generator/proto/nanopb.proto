@@ -16,6 +16,7 @@ enum FieldType {
     FT_POINTER = 4; // Always generate a dynamically allocated field.
     FT_STATIC = 2; // Generate a static field or raise an exception if not possible.
     FT_IGNORE = 3; // Ignore the field completely.
+    FT_INLINE = 5; // Always generate an inline array of fixed size.
 }
 
 enum IntSize {
@@ -65,6 +66,9 @@ message NanoPBOptions {
 
   // decode oneof as anonymous union
   optional bool anonymous_oneof = 11 [default = false];
+
+  // Proto3 singular field does not generate a "has_" flag
+  optional bool proto3 = 12 [default = false];
 }
 
 // Extensions to protoc 'Descriptor' type in order to define options

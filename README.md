@@ -5,7 +5,9 @@ The jankest quadcopter the world has ever seen.
 - platformio
 - Python 3
 - Go
-	- [protobuf](https://github.com/golang/protobuf)
+- Protobuf
+	- [Go](https://github.com/golang/protobuf)
+	- [Python](https://github.com/google/protobuf/tree/master/python)
 
 # TODO
 - [x] Shared memory
