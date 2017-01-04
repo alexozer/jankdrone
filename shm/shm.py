@@ -7,7 +7,7 @@ untagged_shm = {
         'softKill': True
     },
 
-    'motors': {
+    'thrusters': {
         'front': 0.0,
         'left': 0.0,
         'right': 0.0,

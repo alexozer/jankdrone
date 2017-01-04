@@ -11,18 +11,49 @@ import (
 
 const handheldRetryPeriod = time.Millisecond * 500
 
+type handheldVar struct {
+	groupName, varName string
+	value, lastValue   interface{}
+}
+
+func (this *handheldVar) Set(value interface{}) {
+	this.lastValue, this.value = this.value, value
+}
+
+func (this *handheldVar) AddIfNew(vars []Var) []Var {
+	if this.value != this.lastValue {
+		return append(vars, MustBindVar(this.groupName, this.varName, this.value))
+	} else {
+		return vars
+	}
+}
+
 type Handheld struct {
 	port *serial.Port
 	out  chan<- []Var
 
-	lastForce float64
-	lastYaw   float64
-	lastPitch float64
-	lastRoll  float64
+	softKill, force, yaw, pitch, roll handheldVar
+	vars                              []*handheldVar
 }
 
 func NewHandheld(out chan<- []Var) *Handheld {
-	return &Handheld{out: out}
+	this := new(Handheld)
+	this.out = out
+
+	this.softKill = handheldVar{groupName: "switches", varName: "softKill"}
+	this.force = handheldVar{groupName: "controller", varName: "verticalForce"}
+	this.yaw = handheldVar{groupName: "controller", varName: "yawDesire"}
+	this.pitch = handheldVar{groupName: "controller", varName: "pitchDesire"}
+	this.roll = handheldVar{groupName: "controller", varName: "rollDesire"}
+
+	this.vars = []*handheldVar{
+		&this.softKill,
+		&this.force,
+		&this.yaw,
+		&this.pitch,
+		&this.roll,
+	}
+	return this
 }
 
 func (this *Handheld) Start() {
@@ -42,8 +73,9 @@ func (this *Handheld) startSession() {
 	fmt.Println("Handheld connected")
 
 	for {
-		var leftX, leftY, rightX, rightY int
-		_, err = fmt.Fscanln(this.port, &leftX, &leftY, &rightX, &rightY)
+		var softKill bool
+		var leftX, leftY, rightX, rightY float64
+		_, err = fmt.Fscanln(this.port, &softKill, &leftX, &leftY, &rightX, &rightY)
 		if err == io.EOF {
 			fmt.Println("Handeld disconnected")
 			return
@@ -52,46 +84,33 @@ func (this *Handheld) startSession() {
 			continue
 		}
 
-		this.outputVars(leftX, leftY, rightX, rightY)
+		this.outputVars(softKill, leftX, leftY, rightX, rightY)
 	}
 }
 
-func (this *Handheld) outputVars(leftX, leftY, rightX, rightY int) {
+func (this *Handheld) outputVars(softKill bool, leftX, leftY, rightX, rightY float64) {
 	const maxInput = 1023
 	const minForce, maxForce = 0.05, 1
 	const minTilt, maxTilt = 1, 5
 
-	force := float64(leftY-maxInput/2) / (maxInput / 2)
-	yaw := float64(leftX-maxInput/2) / maxInput * 360
-	pitch := float64(rightY-maxInput/2) / (maxInput / 2) * maxTilt
-	roll := float64(rightX-maxInput/2) / (maxInput / 2) * maxTilt
-
+	force := (leftY - maxInput/2) / (maxInput / 2)
 	force = math.Min(force, maxForce)
-	force = toZero(force, minForce)
-	yaw = toZero(yaw, minTilt)
-	pitch = toZero(pitch, minTilt)
-	roll = toZero(roll, minTilt)
+	yaw := (leftX - maxInput/2) / maxInput * 360
+	pitch := (rightY - maxInput/2) / (maxInput / 2) * maxTilt
+	roll := (rightX - maxInput/2) / (maxInput / 2) * maxTilt
 
-	var outBuf []Var
-	if force != this.lastForce {
-		outBuf = append(outBuf, MustBindVar("controller", "verticalForce", force))
-		this.lastForce = force
-	}
-	if yaw != this.lastYaw {
-		outBuf = append(outBuf, MustBindVar("controller", "yawDesire", yaw))
-		this.lastYaw = yaw
-	}
-	if pitch != this.lastPitch {
-		outBuf = append(outBuf, MustBindVar("controller", "pitchDesire", pitch))
-		this.lastPitch = pitch
-	}
-	if roll != this.lastRoll {
-		outBuf = append(outBuf, MustBindVar("controller", "rollDesire", roll))
-		this.lastRoll = roll
-	}
+	this.softKill.Set(softKill)
+	this.force.Set(toZero(force, minForce))
+	this.yaw.Set(toZero(yaw, minTilt))
+	this.pitch.Set(toZero(pitch, minTilt))
+	this.roll.Set(toZero(roll, minTilt))
 
-	if len(outBuf) > 0 {
-		this.out <- outBuf
+	var outVars []Var
+	for _, v := range this.vars {
+		outVars = v.AddIfNew(outVars)
+	}
+	if len(outVars) > 0 {
+		this.out <- outVars
 	}
 }
 

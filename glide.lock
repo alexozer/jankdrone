@@ -1,10 +1,20 @@
 hash: d72e7ebaad664b92c607594ee366c82b371f2fa5583f102ba433f292dc63bcb6
-updated: 2016-12-31T20:48:36.728611196-05:00
+updated: 2017-01-03T10:48:06.548462734-05:00
 imports:
 - name: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  subpackages:
+  - proto
 - name: github.com/paypal/gatt
   version: 4ae819d591cfc94c496c45deb55928469542beec
+  subpackages:
+  - linux
+  - linux/cmd
+  - linux/evt
+  - linux/gioctl
+  - linux/socket
+  - linux/util
+  - xpc
 - name: github.com/tarm/serial
   version: 37be519d49878d0098e34fb614136b81e6c87861
 testImports: []
