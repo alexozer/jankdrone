@@ -26,12 +26,18 @@ constexpr int FADE_PERIOD = 500,
 		  FADE_MAX_VALUE = 200;
 
 void Led::fade() {
+	static auto led = Shm::var("leds.front"),
+				softKill = Shm::var("switches.softKill");
+	if (softKill->getBool()) {
+		led->set(0);
+		return;
+	}
+
 	int modMillis = millis() % FADE_PERIOD;
 	int pwm = (modMillis % (FADE_PERIOD / 2)) * FADE_MAX_VALUE / (FADE_PERIOD / 2);
 	if (modMillis > FADE_PERIOD / 2) {
 		pwm = FADE_MAX_VALUE - pwm;
 	}
 
-	static auto led = Shm::var("leds.front");
 	led->set(pwm);
 }

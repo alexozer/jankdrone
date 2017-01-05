@@ -4,7 +4,8 @@ Var = namedtuple('Var', ['value', 'tag'])
 
 untagged_shm = {
     'switches': {
-        'softKill': True
+        'softKill': True,
+        'calibrate': False,
     },
 
     'thrusters': {

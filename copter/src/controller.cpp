@@ -1,4 +1,3 @@
-#include "teensy.h"
 #include <Arduino.h>
 #include <cmath>
 #include <fmt/format.h>
@@ -26,8 +25,8 @@ void Controller::operator()() {
 
 	} else {
 		if (m_enabledBefore) {
-			static auto motors = Shm::group("motors");
-			for (auto v : motors->vars()) {
+			static auto thrusters = Shm::group("thrusters");
+			for (auto v : thrusters->vars()) {
 				v->set(0);
 			}
 
@@ -58,14 +57,14 @@ void Controller::operator()() {
 	leftForce += rollForceOffset / 2;
 	rightForce -= rollForceOffset / 2;
 
-	static auto frontMotor = Shm::var("motors.front"),
-				backMotor = Shm::var("motors.back"),
-				leftMotor = Shm::var("motors.left"),
-				rightMotor = Shm::var("motors.right");
-	frontMotor->set(frontForce);
-	backMotor->set(backForce);
-	leftMotor->set(leftForce);
-	rightMotor->set(rightForce);
+	static auto frontThruster = Shm::var("thrusters.front"),
+				backThruster = Shm::var("thrusters.back"),
+				leftThruster = Shm::var("thrusters.left"),
+				rightThruster = Shm::var("thrusters.right");
+	frontThruster->set(frontForce);
+	backThruster->set(backForce);
+	leftThruster->set(leftForce);
+	rightThruster->set(rightForce);
 }
 
 Controller::PID::PID(std::function<float(float, float)> diffFunc):

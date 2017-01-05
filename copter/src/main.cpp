@@ -9,6 +9,7 @@
 #include "remote.h"
 #include "mpu9250.h"
 #include "controller.h"
+#include "thrust.h"
 
 void printOrientation() {
 	static auto yaw = Shm::var("placement.yaw"),
@@ -22,17 +23,17 @@ void printOrientation() {
 	Serial.println();
 }
 
-void printMotors() {
-	static auto front = Shm::var("motors.front"),
-				back = Shm::var("motors.back"),
-				left = Shm::var("motors.left"),
-				right = Shm::var("motors.right"),
-				yaw = Shm::var("placement.yaw");
-	Serial.print("Front motor: "); Serial.println(front->getFloat());
-	Serial.print("Back motor: "); Serial.println(back->getFloat());
-	Serial.print("Left motor: "); Serial.println(left->getFloat());
-	Serial.print("Right motor: "); Serial.println(right->getFloat());
-	Serial.print("Yaw: "); Serial.println(yaw->getFloat());
+void printThrusters() {
+	static auto front = Shm::var("thrusters.front"),
+				back = Shm::var("thrusters.back"),
+				left = Shm::var("thrusters.left"),
+				right = Shm::var("thrusters.right"),
+				softKill = Shm::var("switches.softKill");
+	Serial.print("Front thruster: "); Serial.println(front->getFloat());
+	Serial.print("Back thruster: "); Serial.println(back->getFloat());
+	Serial.print("Left thruster: "); Serial.println(left->getFloat());
+	Serial.print("Right thruster: "); Serial.println(right->getFloat());
+	Serial.print("Soft kill: "); Serial.println(softKill->getBool());
 	Serial.println();
 }
 
@@ -51,25 +52,28 @@ void printLeds() {
 // Statically-allocate everything inside setup() so we can set up serial first
 void setup() {
 	Serial.begin(38400);
-	while (!Serial.available()); // Wait for input first
-	while (Serial.available()) Serial.read(); // Discard input
-	Logger::info("Starting!");
+
+	//while (!Serial.available()); // Wait for input first
+	//while (Serial.available()) Serial.read(); // Discard input
+	//Logger::info("Starting!");
 
 	static Led led;
 	static ThreadController threadController({
-			Thread(std::bind(&Led::operator(), led), 15),
-			//Thread(std::bind(&Led::fade, led), 15),
-			Thread(&MPU9250::loop, 0),
 			Thread(Remote(), 0),
+			//Thread(&MPU9250::loop, 0),
 			Thread(Controller(), 1),
+			Thread(Thrust(), 1),
+			Thread([&] { led(); }, 15),
+			Thread([&] { led.fade(); }, 15),
+			
 			//Thread(&printOrientation, 100),
-			Thread(&printMotors, 100),
+			Thread(&printThrusters, 100),
 			//Thread(&printLeds, 100),
 			});
 
-	Logger::info("Initializing MPU9250...");
-	MPU9250::setup();
-	Logger::info("Done initializing MPU9250");
+	//Logger::info("Initializing MPU9250...");
+	//MPU9250::setup();
+	//Logger::info("Done initializing MPU9250");
 
 	while (true) threadController();
 }

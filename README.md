@@ -20,4 +20,5 @@ The jankest quadcopter the world has ever seen.
 	- [x] Handheld controller
 - [x] IMU readings
 - [x] Controller
+- [x] Thrust writer
 - [ ] LEDs
