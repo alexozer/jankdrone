@@ -7,11 +7,11 @@
 
 #include "led.h"
 #include "remote.h"
-#include "mpu9250.h"
+#include "imu.h"
 #include "controller.h"
 #include "thrust.h"
 
-void printOrientation() {
+void printPlacement() {
 	static auto yaw = Shm::var("placement.yaw"),
 				pitch = Shm::var("placement.pitch"),
 				roll = Shm::var("placement.roll"),
@@ -60,20 +60,16 @@ void setup() {
 	static Led led;
 	static ThreadController threadController({
 			Thread(Remote(), 0),
-			//Thread(&MPU9250::loop, 0),
+			Thread(Imu(), 0),
 			Thread(Controller(), 1),
 			Thread(Thrust(), 1),
 			Thread([&] { led(); }, 15),
 			Thread([&] { led.fade(); }, 15),
 			
-			//Thread(&printOrientation, 100),
-			Thread(&printThrusters, 100),
+			Thread(&printPlacement, 100),
+			//Thread(&printThrusters, 100),
 			//Thread(&printLeds, 100),
 			});
-
-	//Logger::info("Initializing MPU9250...");
-	//MPU9250::setup();
-	//Logger::info("Done initializing MPU9250");
 
 	while (true) threadController();
 }
