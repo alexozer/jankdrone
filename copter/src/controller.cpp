@@ -1,7 +1,5 @@
 #include <Arduino.h>
 #include <cmath>
-#include <fmt/format.h>
-using namespace fmt::literals;
 #include "shm.h"
 #include "controller.h"
 
