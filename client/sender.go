@@ -9,11 +9,11 @@ import (
 
 type Sender struct {
 	bluetooth *Bluetooth
-	vars      <-chan []Var
+	vars      <-chan []BoundVar
 	encoded   chan []byte
 }
 
-func NewSender(vars <-chan []Var) *Sender {
+func NewSender(vars <-chan []BoundVar) *Sender {
 	encoded := make(chan []byte)
 	return &Sender{NewBluetooth(encoded), vars, encoded}
 }
