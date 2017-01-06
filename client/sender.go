@@ -29,7 +29,7 @@ func (this *Sender) Start() {
 			newTag := int32(v.Tag)
 			protoVar.Tag = &newTag
 
-			switch value := v.Value.(type) {
+			switch value := v.DefaultValue.(type) {
 			case int:
 				newValue := int32(value)
 				protoVar.IntValue = &newValue

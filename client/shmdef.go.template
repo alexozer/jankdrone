@@ -1,18 +1,27 @@
 package client
-
-type Var struct {
-	Value interface{}
-	Tag   int
-}
-
 	<!--(macro GOVALUE)-->
 <!--(if value is True)-->true<!--(elif value is False)-->false<!--(else)-->$!value!$<!--(end)-->
 	<!--(end)-->
-var Shm = map[string]map[string]Var{
+
+type Var struct {
+	Group, Name string
+	DefaultValue interface{}
+	Tag   int
+}
+
+var ShmByTag = []*Var{
+	<!--(for g_name, g_vars in sorted(shm.items()))-->
+		<!--(for v_name, v_info in sorted(g_vars.items()))-->
+	&Var{"$!g_name!$", "$!v_name!$", $!GOVALUE(value=v_info.value)!$, $!v_info.tag!$},
+		<!--(end)-->
+	<!--(end)-->
+}
+
+var Shm = map[string]map[string]*Var{
 	<!--(for g_name, g_vars in sorted(shm.items()))-->
 	"$!g_name!$": {
 		<!--(for v_name, v_info in sorted(g_vars.items()))-->
-		"$!v_name!$": {$!GOVALUE(value=v_info.value)!$, $!v_info.tag!$},
+		"$!v_name!$": ShmByTag[$!v_info.tag!$],
 		<!--(end)-->
 	},
 

@@ -11,16 +11,16 @@ import (
 )
 
 type Cli struct {
-	out chan<- []Var
+	out chan<- []BoundVar
 }
 
-func NewCli(out chan<- []Var) *Cli {
+func NewCli(out chan<- []BoundVar) *Cli {
 	return &Cli{out: out}
 }
 
 var cliRegex = regexp.MustCompile(`^(([A-Za-z]*)\.([A-Za-z]*)\s+)?(\S+)$`)
 
-var cliShortcuts = map[string]Var{
+var cliShortcuts = map[string]BoundVar{
 	"k": MustBindVar("switches", "softKill", true),
 	"u": MustBindVar("switches", "softKill", false),
 	"e": MustBindVar("controller", "enabled", true),
@@ -49,7 +49,7 @@ func (this *Cli) Start() {
 			continue
 		}
 
-		var boundVar Var
+		var boundVar BoundVar
 		boundVar, ok := cliShortcuts[submatches[4]]
 		if len(submatches[1]) > 0 || !ok {
 			group, variable := submatches[2], submatches[3]
@@ -81,6 +81,6 @@ func (this *Cli) Start() {
 			}
 		}
 
-		this.out <- []Var{boundVar}
+		this.out <- []BoundVar{boundVar}
 	}
 }

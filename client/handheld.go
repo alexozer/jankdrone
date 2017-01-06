@@ -20,7 +20,7 @@ func (this *handheldVar) Set(value interface{}) {
 	this.lastValue, this.value = this.value, value
 }
 
-func (this *handheldVar) AddIfNew(vars []Var) []Var {
+func (this *handheldVar) AddIfNew(vars []BoundVar) []BoundVar {
 	if this.value != this.lastValue {
 		return append(vars, MustBindVar(this.groupName, this.varName, this.value))
 	} else {
@@ -30,13 +30,13 @@ func (this *handheldVar) AddIfNew(vars []Var) []Var {
 
 type Handheld struct {
 	port *serial.Port
-	out  chan<- []Var
+	out  chan<- []BoundVar
 
 	softKill, force, yaw, pitch, roll handheldVar
 	vars                              []*handheldVar
 }
 
-func NewHandheld(out chan<- []Var) *Handheld {
+func NewHandheld(out chan<- []BoundVar) *Handheld {
 	this := new(Handheld)
 	this.out = out
 
@@ -105,7 +105,7 @@ func (this *Handheld) outputVars(softKill bool, leftX, leftY, rightX, rightY flo
 	this.pitch.Set(toZero(pitch, minTilt))
 	this.roll.Set(toZero(roll, minTilt))
 
-	var outVars []Var
+	var outVars []BoundVar
 	for _, v := range this.vars {
 		outVars = v.AddIfNew(outVars)
 	}
