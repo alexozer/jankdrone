@@ -60,8 +60,8 @@ void setup() {
 	static Led led;
 	static ThreadController threadController({
 			Thread(Remote(), 0),
-			Thread(Imu(), 0),
-			Thread(Controller(), 1),
+			//Thread(Imu(), 0),
+			//Thread(Controller(), 1),
 			Thread(Thrust(), 1),
 			Thread([&] { led(); }, 15),
 			Thread([&] { led.fade(); }, 15),

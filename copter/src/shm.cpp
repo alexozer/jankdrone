@@ -167,11 +167,11 @@ Shm::Var* Shm::varIfExists(std::string name) {
 }
 
 Shm::Var* Shm::varIfExists(int tag) {
-	auto it = get().m_tagMap.find(tag);
-	if (it == get().m_tagMap.end()) {
+	if (tag < 0 || 
+			(size_t)tag >= sizeof(get().m_tagMap) / sizeof(get().m_tagMap[0])) {
 		return nullptr;
 	} else {
-		return it->second;
+		return get().m_tagMap[tag];
 	}
 }
 
@@ -205,7 +205,7 @@ Shm::Shm(std::vector<Group> groups) {
 	for (auto& g : groups) {
 		auto& placedG = m_groups.emplace(g.name(), g).first->second;
 		for (auto var : placedG.vars()) {
-			m_tagMap.emplace(var->tag(), var);
+			m_tagMap[var->tag()] = var;
 		}
 	}
 }

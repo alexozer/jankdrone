@@ -1,0 +1,3 @@
+#pragma once
+
+constexpr int NUM_SHM_VARS = $!sum(len(g) for g in shm)!$;

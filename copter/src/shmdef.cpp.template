@@ -1,8 +1,8 @@
 #include "shm.h"
-
 	<!--(macro CVALUE)-->
 <!--(if value is True)-->true<!--(elif value is False)-->false<!--(else)-->$!value!$<!--(end)-->
 	<!--(end)-->
+
 Shm& Shm::get() {
 	static Shm shm{{
 		<!--(for g_name, g_vars in sorted(shm.items()))-->

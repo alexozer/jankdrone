@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include "shmdef.h"
 
 class Shm {
 	public:
@@ -80,5 +81,5 @@ class Shm {
 		static Shm& get();
 
 		std::unordered_map<std::string, Group> m_groups;
-		std::unordered_map<int, Var*> m_tagMap;
+		Var* m_tagMap[NUM_SHM_VARS];
 };
