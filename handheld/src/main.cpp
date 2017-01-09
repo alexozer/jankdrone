@@ -2,7 +2,7 @@
 
 constexpr int SOFT_KILL = 12,
 		  LEFT_X = A0, LEFT_Y = A1,
-		  RIGHT_X = A2, RIGHT_Y = A3,
+		  RIGHT_X = A3, RIGHT_Y = A2,
 		  LED = 13;
 const int ANALOG_PINS[] = {LEFT_X, LEFT_Y, RIGHT_X, RIGHT_Y};
 constexpr int BLINK_PERIOD = 500;

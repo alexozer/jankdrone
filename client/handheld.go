@@ -99,7 +99,7 @@ func (this *Handheld) outputVars(softKill bool, leftX, leftY, rightX, rightY flo
 	force = math.Min(force, maxForce)
 	yaw := (leftX - maxInput/2) / maxInput * 360
 	pitch := (rightY - maxInput/2) / (maxInput / 2) * maxTilt
-	roll := (rightX - maxInput/2) / (maxInput / 2) * maxTilt
+	roll := -(rightX - maxInput/2) / (maxInput / 2) * maxTilt
 
 	this.softKill.Set(softKill)
 	this.force.Set(toZero(force, minForce))
