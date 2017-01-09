@@ -1,12 +1,12 @@
 syntax = "proto2";
 
 message ShmMsg {
-	message Var {
-		required int32 tag = 1;
-		optional int32 intValue = 2;
-		optional float floatValue = 3;
-		optional bool boolValue = 4;
+	required int32 tag = 1;
+	
+	oneof value {
+		int32 intValue = 2;
+		float floatValue = 3;
+		bool boolValue = 4;
 	}
-
-	repeated Var var = 1;
+	// If a value is not present, the message is a variable read request
 }

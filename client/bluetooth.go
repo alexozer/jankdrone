@@ -7,6 +7,8 @@ import (
 	"github.com/paypal/gatt"
 )
 
+const bluetoothPacketSize = 20
+
 var uartServiceID = gatt.MustParseUUID("6e400001-b5a3-f393-e0a9-e50e24dcca9e")
 var uartServiceRXCharID = gatt.MustParseUUID("6e400002-b5a3-f393-e0a9-e50e24dcca9e")
 var uartServiceTXCharID = gatt.MustParseUUID("6e400003-b5a3-f393-e0a9-e50e24dcca9e")
@@ -17,16 +19,17 @@ type bluetoothConnection struct {
 }
 
 type Bluetooth struct {
-	in         <-chan []byte
+	in         <-chan [][]byte
+	out        chan<- []byte
 	connection chan bluetoothConnection
 }
 
-func NewBluetooth(in <-chan []byte) *Bluetooth {
-	return &Bluetooth{in: in, connection: make(chan bluetoothConnection)}
+func NewBluetooth(in <-chan [][]byte, out chan<- []byte) *Bluetooth {
+	return &Bluetooth{in: in, out: out, connection: make(chan bluetoothConnection)}
 }
 
 func (this *Bluetooth) Start() {
-	go this.writer()
+	go this.write()
 
 	for {
 		device, err := gatt.NewDevice(
@@ -46,11 +49,11 @@ func (this *Bluetooth) Start() {
 		)
 
 		device.Init(this.onStateChanged)
-		select {}
+		break
 	}
 }
 
-func (this *Bluetooth) writer() {
+func (this *Bluetooth) write() {
 	var connection bluetoothConnection
 	gotFirstConnection := false
 	for !gotFirstConnection {
@@ -65,10 +68,39 @@ func (this *Bluetooth) writer() {
 		select {
 		case connection = <-this.connection:
 		case msg := <-this.in:
-			// TODO deal with call blocking on connection close
-			connection.Periph.WriteCharacteristic(connection.Characteristic, msg, true)
+			if len(msg) == 0 {
+				continue
+			}
+
+			for len(msg) > 0 {
+				// Init packet with first msg slice because it's most likely the entire packet
+				packet := msg[0]
+				msg = msg[1:]
+				if len(packet) > bluetoothPacketSize {
+					fmt.Printf("Cannot send message over bluetooth because it is larger than %d bytes\n",
+						bluetoothPacketSize,
+					)
+					continue
+				}
+				for len(msg) > 0 && len(packet)+len(msg[0]) <= bluetoothPacketSize {
+					packet = append(packet, msg[0]...)
+					msg = msg[1:]
+				}
+
+				// TODO deal with call blocking on connection close
+				err := connection.Periph.WriteCharacteristic(connection.Characteristic, packet, true)
+				if err != nil {
+					fmt.Println("Failed to send message over bluetooth:", err)
+				}
+			}
 		}
 	}
+}
+
+func (this *Bluetooth) read(c *gatt.Characteristic, b []byte, err error) {
+	// Assume we receive the entire message at once (even though in theory we
+	// could wait for more messages to come to satisfy the length byte)
+	this.out <- b
 }
 
 func (this *Bluetooth) onStateChanged(device gatt.Device, state gatt.State) {
@@ -108,26 +140,23 @@ func (this *Bluetooth) onConnected(periph gatt.Peripheral, err error) {
 				return
 			}
 
-			rxFound := false
+			rxFound, txFound := false, false
 			for _, c := range cs {
-				//if c.UUID().Equal(uartServiceTXCharID) {
-				//log.Println("TX Characteristic found")
+				if c.UUID().Equal(uartServiceTXCharID) {
+					txFound = true
+					periph.DiscoverDescriptors(nil, c)
+					periph.SetNotifyValue(c, this.read)
 
-				//periph.DiscoverDescriptors(nil, c)
-				//periph.SetNotifyValue(c, func(c *gatt.Characteristic, b []byte, err error) {
-				//log.Printf("Got back '%s'\n", string(b))
-				//})
-
-				if c.UUID().Equal(uartServiceRXCharID) {
+				} else if c.UUID().Equal(uartServiceRXCharID) {
 					rxFound = true
-					fmt.Println("Connected to copter on bluetooth")
 					this.connection <- bluetoothConnection{periph, c}
 				}
 			}
-			if !rxFound {
-				fmt.Println("RX characteristic not found")
+			if !rxFound || !txFound {
+				fmt.Println("Could not find all characteristics of bluetooth device")
 				return
 			}
+			fmt.Println("Connected to copter on bluetooth")
 		}
 	}
 }

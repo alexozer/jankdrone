@@ -1,54 +1,100 @@
 package client
 
 import (
+	"fmt"
 	"log"
+	"math"
 
 	"github.com/alexozer/jankcopter/shm"
 	"github.com/golang/protobuf/proto"
 )
 
 type Sender struct {
-	bluetooth *Bluetooth
-	vars      <-chan []BoundVar
-	encoded   chan []byte
+	bluetooth  *Bluetooth
+	varsIn     <-chan []BoundVar
+	varsOut    chan<- BoundVar
+	encodedIn  chan []byte
+	encodedOut chan [][]byte
 }
 
-func NewSender(vars <-chan []BoundVar) *Sender {
-	encoded := make(chan []byte)
-	return &Sender{NewBluetooth(encoded), vars, encoded}
+func NewSender(varsIn <-chan []BoundVar, varsOut chan<- BoundVar) *Sender {
+	encodedIn, encodedOut := make(chan []byte), make(chan [][]byte)
+	return &Sender{
+		NewBluetooth(encodedOut, encodedIn),
+		varsIn, varsOut,
+		encodedIn, encodedOut,
+	}
 }
 
 func (this *Sender) Start() {
-	go this.bluetooth.Start()
+	this.bluetooth.Start()
+	go this.write()
+	go this.read()
+}
 
-	for varSlice := range this.vars {
+func (this *Sender) write() {
+	for varSlice := range this.varsIn {
 
-		shmMsg := new(shm.ShmMsg)
+		var out [][]byte
 		for _, v := range varSlice {
-			protoVar := new(shm.ShmMsg_Var)
+			msg := new(shm.ShmMsg)
 			newTag := int32(v.Tag)
-			protoVar.Tag = &newTag
+			msg.Tag = &newTag
 
-			switch value := v.Value.(type) {
-			case int:
-				newValue := int32(value)
-				protoVar.IntValue = &newValue
-			case float64:
-				newValue := float32(value)
-				protoVar.FloatValue = &newValue
-			case bool:
-				protoVar.BoolValue = &value
-			default:
-				log.Fatal("Unexpected shm variable type")
+			if v.Value != nil {
+				switch value := v.Value.(type) {
+				case int:
+					msg.Value = &shm.ShmMsg_IntValue{IntValue: int32(value)}
+				case float64:
+					msg.Value = &shm.ShmMsg_FloatValue{FloatValue: float32(value)}
+				case bool:
+					msg.Value = &shm.ShmMsg_BoolValue{BoolValue: value}
+				default:
+					log.Fatal("Unexpected shm variable type")
+				}
 			}
 
-			shmMsg.Var = append(shmMsg.Var, protoVar)
+			encodedVar, err := proto.Marshal(msg)
+			if err != nil {
+				log.Fatal("Failed to encode shm message:", err)
+			}
+			if len(encodedVar) > math.MaxUint8 {
+				fmt.Println("Failed to send encoded variable; length too long")
+				continue
+			}
+			framedVar := append([]byte{byte(len(encodedVar))}, encodedVar...)
+			out = append(out, framedVar)
 		}
 
-		out, err := proto.Marshal(shmMsg)
-		if err != nil {
-			log.Fatal("Failed to encode shm message:", err)
+		this.encodedOut <- out
+	}
+}
+
+func (this *Sender) read() {
+	for encodedVar := range this.encodedIn {
+		shmMsg := new(shm.ShmMsg)
+		if proto.Unmarshal(encodedVar[1:], shmMsg) != nil {
+			fmt.Println("Unable to unmarshal remote message")
+			continue
 		}
-		this.encoded <- out
+
+		var outValue interface{}
+		switch inValue := shmMsg.Value.(type) {
+		case *shm.ShmMsg_IntValue:
+			outValue = int(inValue.IntValue)
+		case *shm.ShmMsg_FloatValue:
+			outValue = float64(inValue.FloatValue)
+		case *shm.ShmMsg_BoolValue:
+			outValue = inValue.BoolValue
+		default:
+			fmt.Println("Unknown remote var type")
+		}
+
+		v, err := BindVarTag(int(*shmMsg.Tag), outValue)
+		if err != nil {
+			fmt.Println("Failed to bind remote var:", err)
+			continue
+		}
+		this.varsOut <- v
 	}
 }

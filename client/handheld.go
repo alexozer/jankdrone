@@ -57,10 +57,12 @@ func NewHandheld(out chan<- []BoundVar) *Handheld {
 }
 
 func (this *Handheld) Start() {
-	for {
-		this.startSession()
-		time.Sleep(handheldRetryPeriod)
-	}
+	go func() {
+		for {
+			this.startSession()
+			time.Sleep(handheldRetryPeriod)
+		}
+	}()
 }
 
 func (this *Handheld) startSession() {

@@ -50,63 +50,101 @@ void Remote::readBluetooth() {
 void Remote::readStream(Stream* stream) {
 	if (!stream->available()) return;
 
-	// TODO rely on message framing instead of timing?
-	size_t bytesRead = 0;
-	while (bytesRead < sizeof(m_messageBuffer) && stream->available()) {
+	int size = stream->read();
+	int bytesRead = 0;
+	while (bytesRead < size && stream->available()) {
 		m_messageBuffer[bytesRead++] = stream->read();
 	}
-	if (stream->available()) {
-		Logger::error("Remote message larger than {} bytes, discarding", sizeof(m_messageBuffer));
-		while (stream->available()) stream->read();
+	if (bytesRead < size) {
+		// Assume the whole message is available at once
+		Logger::error("Remote message shorter than expected length, discarding");
 		return;
 	}
 
-	ShmMsg update = ShmMsg_init_zero;
+	ShmMsg msg = ShmMsg_init_zero;
 	auto pbUpdateStream = pb_istream_from_buffer(m_messageBuffer, bytesRead);
-	update.var = {&decodeVar, nullptr};
-	if (!pb_decode_noinit(&pbUpdateStream, ShmMsg_fields, &update)) {
+	if (!pb_decode_noinit(&pbUpdateStream, ShmMsg_fields, &msg)) {
 		Logger::error("Failed to decode remote message: {}",
 				PB_GET_ERROR(&pbUpdateStream));
 	}
-}
 
-bool Remote::decodeVar(pb_istream_t* stream, const pb_field_t* field, void** arg) {
-	ShmMsg_Var var = ShmMsg_Var_init_zero;
-	if (!pb_decode_noinit(stream, ShmMsg_Var_fields, &var)) {
-		Logger::error("Failed to decode remote variable: {}",
-				PB_GET_ERROR(stream));
-		return false;
+	auto shmVar = Shm::varIfExists(msg.tag);
+	if (!shmVar) {
+		Logger::error("Remote var tag not found: {}", msg.tag);
+		return;
 	}
 
-	Shm::Var::Type msgType;
-	if (var.has_intValue) msgType = Shm::Var::Type::INT;
-	else if (var.has_floatValue) msgType = Shm::Var::Type::FLOAT;
-	else if (var.has_boolValue) msgType = Shm::Var::Type::BOOL;
-	else msgType = Shm::Var::Type::STRING;
+	Shm::Var::Type msgVarType;
+	switch (msg.which_value) {
+		case ShmMsg_intValue_tag:
+			msgVarType = Shm::Var::Type::INT;
+			break;
+		case ShmMsg_floatValue_tag:
+			msgVarType = Shm::Var::Type::FLOAT;
+			break;
+		case ShmMsg_boolValue_tag:
+			msgVarType = Shm::Var::Type::BOOL;
+			break;
+		default:
+			sendVar(stream, shmVar);
+			return;
+	}
 
-	auto shmVar = Shm::var(var.tag);
 	auto shmVarType = shmVar->type();
-	if (msgType != shmVarType) {
+	if (msgVarType != shmVarType) {
 		Logger::error("Remote var type mismatch: expected {}, got {}",
 				Shm::typeString(shmVarType),
-				Shm::typeString(msgType));
-		return true;
+				Shm::typeString(msgVarType));
 	}
 
-	switch (msgType) {
+	switch (shmVarType) {
 		case Shm::Var::Type::INT:
-			shmVar->set((int)var.intValue);
+			shmVar->set((int)msg.value.intValue);
 			break;
 		case Shm::Var::Type::FLOAT:
-			shmVar->set(var.floatValue);
+			shmVar->set(msg.value.floatValue);
 			break;
 		case Shm::Var::Type::BOOL:
-			shmVar->set(var.boolValue);
+			shmVar->set(msg.value.boolValue);
 			break;
 		default:
 			Logger::error("Unsupported remote var type");
 			break;
 	}
+}
 
-	return true;
+void Remote::sendVar(Stream* stream, Shm::Var* var) {
+	ShmMsg msg;
+	msg.tag = var->tag();
+	switch (var->type()) {
+		case Shm::Var::Type::INT:
+			msg.which_value = ShmMsg_intValue_tag;
+			msg.value.intValue = var->getInt();
+			break;
+		case Shm::Var::Type::FLOAT:
+			msg.which_value = ShmMsg_floatValue_tag;
+			msg.value.floatValue = var->getFloat();
+			break;
+		case Shm::Var::Type::BOOL:
+			msg.which_value = ShmMsg_boolValue_tag;
+			msg.value.boolValue = var->getBool();
+			break;
+		default:
+			Logger::error("Unsupported remote var type");
+			return;
+	}
+
+	size_t encodedSize;
+	pb_get_encoded_size(&encodedSize, ShmMsg_fields, &msg);
+	constexpr int bufSize = sizeof(m_messageBuffer) / sizeof(m_messageBuffer[0]);
+	if (encodedSize > (bufSize - 1)) {
+		Logger::error("Encoded remote message too large to send");
+		return;
+	}
+
+	m_messageBuffer[0] = (uint8_t)encodedSize;
+	auto ostream = pb_ostream_from_buffer(&m_messageBuffer[1], bufSize - 1);
+	pb_encode(&ostream, ShmMsg_fields, &msg);
+
+	stream->write(m_messageBuffer, encodedSize+1);
 }

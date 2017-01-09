@@ -18,9 +18,6 @@ void loop() {
 	Serial.print(digitalRead(SOFT_KILL));
 	Serial.print(' ');
 
-	bool ledState = !softKill && (millis() % BLINK_PERIOD) >= (BLINK_PERIOD / 2);
-	digitalWrite(LED, ledState);
-
 	for (int pin : ANALOG_PINS) {
 		Serial.print(analogRead(pin));
 		if (pin != ANALOG_PINS[sizeof(ANALOG_PINS) / sizeof(ANALOG_PINS[0]) - 1]) {
@@ -29,5 +26,9 @@ void loop() {
 	}
 
 	Serial.println();
+
+	bool ledState = !softKill && (millis() % BLINK_PERIOD) >= (BLINK_PERIOD / 2);
+	digitalWrite(LED, ledState);
+
 	delay(20);
 }

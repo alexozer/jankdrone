@@ -51,7 +51,7 @@ void printLeds() {
 
 // Statically-allocate everything inside setup() so we can set up serial first
 void setup() {
-	Serial.begin(38400);
+	Serial.begin(115200);
 
 	//while (!Serial.available()); // Wait for input first
 	//while (Serial.available()) Serial.read(); // Discard input
@@ -60,13 +60,13 @@ void setup() {
 	static Led led;
 	static ThreadController threadController({
 			Thread(Remote(), 0),
-			//Thread(Imu(), 0),
-			//Thread(Controller(), 1),
+			Thread(Imu(), 0),
+			Thread(Controller(), 1),
 			Thread(Thrust(), 1),
 			Thread([&] { led(); }, 15),
 			Thread([&] { led.fade(); }, 15),
 			
-			Thread(&printPlacement, 100),
+			//Thread(&printPlacement, 100),
 			//Thread(&printThrusters, 100),
 			//Thread(&printLeds, 100),
 			});
