@@ -10,15 +10,45 @@ The jankest quadcopter the world has ever seen.
 	- [Python](https://github.com/google/protobuf/tree/master/python)
 
 # TODO
+
+## Software
 - [x] Shared memory
 - [x] Threading
 - [x] Logging
-- [x] Bluetooth remote control
+- Bluetooth message passing
 	- [x] Protocol
 	- [x] Server
-	- [x] Client
-	- [x] Handheld controller
+	- Client
+		- [x] Handheld controller
+		- [x] CLI
+	- [ ] Deadman (softkill / land on remote disconnect)
 - [x] IMU readings
 - [x] Controller
-- [x] Thrust writer
+- Thrust writer
+	- [x] Basic linear writing
+	- [x] Calibration
+	- [ ] Force-thrust function from bollard-poll
+- Voltage monitor
+	- [x] Measurement
+	- [ ] Low voltage action
 - [ ] LEDs
+
+## Electrical
+- Main board
+	- [x] Teensy mount
+	- [x] MPU9250 mount
+	- [x] Bluefruit mount
+	- [x] ESC plugs
+	- [x] Voltage monitor wire
+	- [ ] LEDs
+- Power board
+	- [ ] 12V power rail
+		- Needs rework to support high current
+	- [x] Voltage measurement source
+	- [x] 5V-regulated power for computer board
+
+## Mechanical
+- [x] PVC frame (failed, too heavy)
+- [x] New metal sheet only frame
+- [x] Thrusters
+- [x] Landing posts
