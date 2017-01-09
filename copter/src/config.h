@@ -24,4 +24,7 @@ constexpr int FRONT_THRUSTER_PIN = 3,
 		  RIGHT_THRUSTER_PIN = 5,
 		  BACK_THRUSTER_PIN = 6;
 
+constexpr int VOLTAGE_PIN = 14,
+		  VOLTAGE_FACTOR = 4;
+
 constexpr int CALIBRATED_ADDRESS = 0;

@@ -55,6 +55,10 @@ untagged_shm = {
     'temperature': {
         'gyro': 0.0,
     },
+
+    'power': {
+        'voltage': 0.0,
+    },
 }
 
 def tag(untagged):
