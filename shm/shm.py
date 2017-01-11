@@ -58,6 +58,7 @@ untagged_shm = {
 
     'power': {
         'voltage': 0.0,
+        'low': False,
     },
 }
 

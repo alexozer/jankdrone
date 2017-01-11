@@ -28,7 +28,7 @@ void setup() {
 			Thread(Thrust(), 1),
 			Thread(&Power::readVoltage, 100),
 			Thread([&] { led(); }, 15),
-			Thread([&] { led.fade(); }, 15),
+			Thread([&] { led.showStatus(); }, 15),
 			});
 
 	while (true) threadController();
