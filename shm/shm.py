@@ -19,19 +19,19 @@ untagged_shm = {
         'enabled': False,
         'verticalForce': 0.0,
 
-        'yawEnabled': True,
+        'yawEnabled': False,
         'yawDesire': 0.0,
         'yawP': 1.0,
         'yawI': 0.0,
         'yawD': 0.0,
 
-        'pitchEnabled': True,
+        'pitchEnabled': False,
         'pitchDesire': 0.0,
         'pitchP': 1.0,
         'pitchI': 0.0,
         'pitchD': 0.0,
 
-        'rollEnabled': True,
+        'rollEnabled': False,
         'rollDesire': 0.0,
         'rollP': 1.0,
         'rollI': 0.0,

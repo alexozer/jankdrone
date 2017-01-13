@@ -39,12 +39,17 @@ void Remote::readBluetooth() {
 				// We don't care
 				break;
 		}
-		m_lastState = state;
 	}
 
 	if (state == ACI_EVT_CONNECTED) {
 		readStream(&m_bluetooth);
+	} else if (m_lastState == ACI_EVT_CONNECTED) {
+		Logger::debug("Softkilling due to bluetooth disconnect");
+		static auto softKill = Shm::var("switches.softKill");
+		softKill->set(true);
 	}
+
+	m_lastState = state;
 }
 
 void Remote::readStream(Stream* stream) {
