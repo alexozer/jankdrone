@@ -32,6 +32,9 @@ The jankest quadcopter the world has ever seen.
 	- [x] Measurement
 	- [ ] Low voltage action
 - [ ] LEDs
+- Autonomous
+	- [ ] Mission framework
+	- [ ] Missions
 
 ## Electrical
 - Main board
