@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <cmath>
 #include "shm.h"
 #include "controller.h"
 
@@ -41,6 +40,13 @@ void Controller::operator()() {
 		  leftForce = initForce,
 		  rightForce = initForce;
 
+	// TODO remove
+	constexpr float forceScale = 3;
+	frontForce *= forceScale;
+	backForce *= forceScale;
+	leftForce *= forceScale;
+	rightForce *= forceScale;
+
 	float yawForceOffset = m_yawControl.forceOffset();
 	frontForce += yawForceOffset / 2;
 	backForce += yawForceOffset / 2;
@@ -63,30 +69,6 @@ void Controller::operator()() {
 	backThruster->set(backForce);
 	leftThruster->set(leftForce);
 	rightThruster->set(rightForce);
-}
-
-Controller::PID::PID(std::function<float(float, float)> diffFunc):
-	m_diffFunc{diffFunc}, m_firstRun{true}, m_lastTimeMicros{0}, m_lastValue{0} {}
-
-float Controller::PID::operator()(float value, float desire, float p, float i, float d) {
-	if (m_firstRun) {
-		m_lastTimeMicros = micros();
-		m_lastValue = value;
-		m_firstRun = false;
-		return 0;
-	}
-
-	float nowMicros = micros();
-	float dt = (nowMicros - m_lastTimeMicros) / 1e6f;
-	m_lastTimeMicros = nowMicros;
-
-	// TODO implement integral term
-	float error = m_diffFunc(desire, value);
-	return p * error + d * m_diffFunc(-value, -m_lastValue) / dt;
-}
-
-void Controller::PID::reset() {
-	m_firstRun = true;
 }
 
 Controller::AxisControl::AxisControl(std::string name):
@@ -114,10 +96,4 @@ float Controller::AxisControl::forceOffset() {
 
 void Controller::AxisControl::reset() {
 	m_pid.reset();
-}
-
-float Controller::angleDiff(float a, float b) {
-    float diff = std::fmod((a - b), 360);
-	if (diff < 0) diff += 360;
-	return (diff < 180) ? diff : diff - 360;
 }
