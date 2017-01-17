@@ -21,19 +21,19 @@ The jankest quadcopter the world has ever seen.
 	- Client
 		- [x] Handheld controller
 		- [x] CLI
-	- [ ] Deadman (softkill / land on remote disconnect)
 - [x] IMU readings
-- [x] Controller
+- Controller
+	- [x] Quadcopter support
+	- [ ] Hexcopter (or 2n-copter) support
 - Thrust writer
 	- [x] Basic linear writing
 	- [x] Calibration
 	- [ ] Force-thrust function from bollard-poll
-- Voltage monitor
-	- [x] Measurement
-	- [ ] Low voltage action
-- [ ] LEDs
+- [x] Voltage measurement
+- [ ] LED strips
+- [ ] Deadman (kill / land on disconnection, critical battery)
 - Autonomous
-	- [ ] Mission framework
+	- [x] Mission framework
 	- [ ] Missions
 
 ## Electrical
@@ -43,15 +43,20 @@ The jankest quadcopter the world has ever seen.
 	- [x] Bluefruit mount
 	- [x] ESC plugs
 	- [x] Voltage monitor wire
-	- [ ] LEDs
+	- [ ] LED strips
 - Power board
-	- [ ] 12V power rail
-		- Needs rework to support high current
+	- [x] 12V power rail
 	- [x] Voltage measurement source
 	- [x] 5V-regulated power for computer board
 
 ## Mechanical
-- [x] PVC frame (failed, too heavy)
-- [x] New metal sheet only frame
-- [x] Thrusters
-- [x] Landing posts
+- Version 1 (failed, too heavy)
+	- [x] PVC frame
+	- [x] PVC tube thruster mounts
+	- [x] Metal sheet electronics mount
+- Version 2 (failed, too heavy, thrust blockage)
+	- [x] Metal sheet only frame
+	- [x] Thrusters
+	- [x] Landing posts
+- Version 3
+	- [ ] Carbon fiber frame
