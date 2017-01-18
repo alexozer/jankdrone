@@ -12,26 +12,31 @@
 #include "thrust.h"
 #include "power.h"
 
-// Statically-allocate everything inside setup() so we can set up serial first
+struct Main {
+	Remote remote;
+	Imu imu;
+	Controller controller;
+	Thrust thrust;
+	Led led;
+
+	ThreadController threadController;
+
+	Main(): threadController{
+		Thread([&] { remote(); }, 0),
+		Thread([&] { imu(); }, 0),
+		Thread([&] { controller(); }, 1),
+		Thread([&] { thrust(); }, 1),
+		Thread(&Power::readVoltage, 100),
+		Thread([&] { led(); }, 1000 / 60),
+		Thread([&] { led.showStatus(); }, 1000 / 60),
+	} { Serial.begin(115200); }
+
+	void operator()() { while (true) threadController(); }
+};
+
 void setup() {
-	Serial.begin(115200);
-
-	//while (!Serial.available()); // Wait for input first
-	//while (Serial.available()) Serial.read(); // Discard input
-	//Logger::info("Starting!");
-
-	static Led led;
-	static ThreadController threadController({
-			Thread(Remote(), 0),
-			//Thread(Imu(), 0),
-			Thread(Controller(), 1),
-			Thread(Thrust(), 1),
-			Thread(&Power::readVoltage, 100),
-			Thread([&] { led(); }, 15),
-			Thread([&] { led.showStatus(); }, 15),
-			});
-
-	while (true) threadController();
+	static Main main;
+	main();
 }
 
 void loop() {}
