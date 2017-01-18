@@ -4,7 +4,7 @@
 
 namespace mission {
 
-class Timer : public Task {
+class Timer : public BaseTask {
 	public:
 		Timer(size_t period);
 		bool onFirstRun() override;
@@ -15,14 +15,14 @@ class Timer : public Task {
 		size_t m_startTime;
 };
 
-class Timeout : public Task {
+class Timeout : public BaseTask {
 	public:
-		Timeout(task task, size_t timeout);
+		Timeout(Task task, size_t timeout);
 		bool onRun() override;
 		bool timedOut() const;
 
 	private:
-		task m_task, m_timer;
+		Task m_task, m_timer;
 		bool m_timedOut;
 };
 

@@ -7,7 +7,7 @@ namespace mission {
 constexpr float TILT_DEADBAND = 1,
 		  YAW_DEADBAND = 5;
 
-class Setter : public Task {
+class Setter : public BaseTask {
 	public:
 		Setter(V<float> target, 
 				std::function<void(float)> desireSetter, 

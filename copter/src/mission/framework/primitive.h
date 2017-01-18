@@ -8,7 +8,7 @@ namespace Logger {
 
 namespace mission {
 
-class NoOp : public Task {
+class NoOp : public BaseTask {
 	public:
 		NoOp(bool finite = true);
 		bool onRun() override;
@@ -17,7 +17,7 @@ class NoOp : public Task {
 		bool m_finite;
 };
 
-class Function : public Task {
+class Function : public BaseTask {
 	public:
 		Function(std::function<void()> func);
 		bool onRun() override;
@@ -26,7 +26,7 @@ class Function : public Task {
 		std::function<void()> m_func;
 };
 
-class Log : public Task {
+class Log : public BaseTask {
 	public:
 		Log(Logger::Level level, std::string msg);
 		virtual ~Log();

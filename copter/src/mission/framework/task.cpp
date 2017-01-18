@@ -21,15 +21,15 @@ bool V<bool>::readShm() {
 
 using namespace mission;
 
-Task::Task(): 
+BaseTask::BaseTask(): 
 	m_hasRun{false},
 	m_finished{false},
 	m_hasEverFinished{false},
 	m_success{true} {}
 
-Task::~Task() {}
+BaseTask::~BaseTask() {}
 
-bool Task::operator()() {
+bool BaseTask::operator()() {
 	m_finished = false;
 	m_finished = m_hasRun ? onRun() : onFirstRun();
 
@@ -46,30 +46,30 @@ bool Task::operator()() {
 	return m_finished;
 }
 
-bool Task::finished() const {
+bool BaseTask::finished() const {
 	return m_finished;
 }
 
-bool Task::hasEverFinished() const {
+bool BaseTask::hasEverFinished() const {
 	return m_hasEverFinished;
 }
 
-bool Task::success() const {
+bool BaseTask::success() const {
 	return m_success;
 }
 
-bool Task::onFirstRun() { return false; }
-bool Task::onRun() { return true; }
-void Task::onFinish() {}
+bool BaseTask::onFirstRun() { return false; }
+bool BaseTask::onRun() { return true; }
+void BaseTask::onFinish() {}
 
-void Task::succeed() {
+void BaseTask::succeed() {
 	m_success = true;
 }
 
-void Task::fail() {
+void BaseTask::fail() {
 	m_success = false;
 }
 
-void Task::success(bool state) {
+void BaseTask::success(bool state) {
 	m_success = state;
 }

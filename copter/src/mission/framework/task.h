@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "../shm.h"
+#include "../../shm.h"
 
 namespace mission {
 
@@ -41,12 +41,10 @@ class V {
 		}
 };
 
-class Task {
+class BaseTask {
 	public:
-		typedef std::shared_ptr<Task> task;
-
-		Task();
-		virtual ~Task();
+		BaseTask();
+		virtual ~BaseTask();
 
 		// Run one tick of the task
 		bool operator()();
@@ -79,5 +77,12 @@ class Task {
 		bool m_hasEverFinished;
 		bool m_success;
 };
+
+using Task = std::shared_ptr<BaseTask>;
+
+template <typename T, typename... Args>
+std::shared_ptr<T> make(Args&&... args) {
+	return std::make_shared<T>(std::forward<Args>(args)...);
+}
 
 } // namespace mission

@@ -14,9 +14,9 @@ bool Timer::onRun() {
 	return millis() - m_startTime >= m_period;
 }
 
-Timeout::Timeout(task task, size_t timeout):
+Timeout::Timeout(Task task, size_t timeout):
 	m_task{task},
-	m_timer{std::make_shared<Timer>(timeout)},
+	m_timer{make<Timer>(timeout)},
 	m_timedOut{false} {}
 
 bool Timeout::onRun() {

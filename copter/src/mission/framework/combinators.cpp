@@ -2,7 +2,7 @@
 
 using namespace mission;
 
-Sequential::Sequential(std::vector<task> tasks, bool finite):
+Sequential::Sequential(std::vector<Task> tasks, bool finite):
 	m_tasks{tasks}, m_finite{finite}, m_currentTask{m_tasks.begin()} {}
 
 bool Sequential::onRun() {
@@ -23,8 +23,8 @@ bool Sequential::onRun() {
 	return true;
 }
 
-Concurrent::Concurrent(std::vector<task> tasks, bool finite):
-	m_tasks{tasks}, m_finite{finite}, m_lastSuccess{true} {}
+Concurrent::Concurrent(std::vector<Task> tasks, bool finite):
+	m_tasks{tasks}, m_finite{finite} {}
 
 bool Concurrent::onRun() {
 	if (m_finite && hasEverFinished()) return true;
@@ -43,7 +43,7 @@ bool Concurrent::onRun() {
 	return false;
 }
 
-MasterConcurrent::MasterConcurrent(task primaryTask, task secondaryTask):
+MasterConcurrent::MasterConcurrent(Task primaryTask, Task secondaryTask):
 	m_primaryTask{primaryTask}, m_secondaryTask{secondaryTask} {}
 
 bool MasterConcurrent::onRun() {
