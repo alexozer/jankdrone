@@ -15,3 +15,7 @@ Square::Square() {
 
 	m_task = make<Sequential>(subtasks);
 }
+
+bool Square::onRun() {
+	return (*m_task)();
+}
