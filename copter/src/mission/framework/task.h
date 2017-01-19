@@ -41,9 +41,13 @@ class V {
 		}
 };
 
+class BaseTask;
+using Task = std::shared_ptr<BaseTask>;
+
 class BaseTask {
 	public:
 		BaseTask();
+		BaseTask(Task task);
 		virtual ~BaseTask();
 
 		// Run one tick of the task
@@ -72,13 +76,12 @@ class BaseTask {
 		void success(bool state);
 
 	private:
+		Task m_task;
 		bool m_hasRun;
 		bool m_finished;
 		bool m_hasEverFinished;
 		bool m_success;
 };
-
-using Task = std::shared_ptr<BaseTask>;
 
 template <typename T, typename... Args>
 std::shared_ptr<T> make(Args&&... args) {

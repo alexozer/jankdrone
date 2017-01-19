@@ -21,7 +21,10 @@ bool V<bool>::readShm() {
 
 using namespace mission;
 
-BaseTask::BaseTask(): 
+BaseTask::BaseTask(): BaseTask{nullptr} {}
+
+BaseTask::BaseTask(Task task):
+	m_task{task},
 	m_hasRun{false},
 	m_finished{false},
 	m_hasEverFinished{false},
@@ -30,6 +33,10 @@ BaseTask::BaseTask():
 BaseTask::~BaseTask() {}
 
 bool BaseTask::operator()() {
+	if (m_task) {
+		return (*m_task)();
+	}
+
 	m_finished = false;
 	m_finished = m_hasRun ? onRun() : onFirstRun();
 
