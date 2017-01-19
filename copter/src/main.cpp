@@ -29,12 +29,14 @@ struct Main {
 		Thread(&Power::readVoltage, 100),
 		Thread([&] { led(); }, 1000 / 60),
 		Thread([&] { led.showStatus(); }, 1000 / 60),
-	} { Serial.begin(115200); }
+	} {}
 
 	void operator()() { while (true) threadController(); }
 };
 
 void setup() {
+	Serial.begin(115200);
+
 	static Main main;
 	main();
 }
