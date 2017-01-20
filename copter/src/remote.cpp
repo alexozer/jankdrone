@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include "logger.h"
+#include "log.h"
 #include "shm.h"
 #include "config.h"
 #include "remote.h"
@@ -27,13 +27,13 @@ void Remote::readBluetooth() {
 	if (state != m_lastState) {
 		switch (state) {
 			case ACI_EVT_DEVICE_STARTED:
-				Logger::info("Bluetooth advertising started");
+				Log::info("Bluetooth advertising started");
 				break;
 			case ACI_EVT_CONNECTED:
-				Logger::info("Bluetooth connected!");
+				Log::info("Bluetooth connected!");
 				break;
 			case ACI_EVT_DISCONNECTED:
-				Logger::info("Bluetooth disconnected or advertising timed out");
+				Log::info("Bluetooth disconnected or advertising timed out");
 				break;
 			default:
 				// We don't care
@@ -44,7 +44,7 @@ void Remote::readBluetooth() {
 	if (state == ACI_EVT_CONNECTED) {
 		readStream(&m_bluetooth);
 	} else if (m_lastState == ACI_EVT_CONNECTED) {
-		Logger::debug("Softkilling due to bluetooth disconnect");
+		Log::warn("Softkilling due to bluetooth disconnect");
 		static auto softKill = Shm::var("switches.softKill");
 		softKill->set(true);
 	}
@@ -62,20 +62,20 @@ void Remote::readStream(Stream* stream) {
 	}
 	if (bytesRead < size) {
 		// Assume the whole message is available at once
-		Logger::error("Remote message shorter than expected length, discarding");
+		Log::error("Remote message shorter than expected length, discarding");
 		return;
 	}
 
 	ShmMsg msg = ShmMsg_init_zero;
 	auto pbUpdateStream = pb_istream_from_buffer(m_messageBuffer, bytesRead);
 	if (!pb_decode_noinit(&pbUpdateStream, ShmMsg_fields, &msg)) {
-		Logger::error("Failed to decode remote message: {}",
+		Log::error("Failed to decode remote message: %s",
 				PB_GET_ERROR(&pbUpdateStream));
 	}
 
 	auto shmVar = Shm::varIfExists(msg.tag);
 	if (!shmVar) {
-		Logger::error("Remote var tag not found: {}", msg.tag);
+		Log::error("Remote var tag not found: %d", msg.tag);
 		return;
 	}
 
@@ -97,9 +97,9 @@ void Remote::readStream(Stream* stream) {
 
 	auto shmVarType = shmVar->type();
 	if (msgVarType != shmVarType) {
-		Logger::error("Remote var type mismatch: expected {}, got {}",
-				Shm::typeString(shmVarType),
-				Shm::typeString(msgVarType));
+		Log::error("Remote var type mismatch: expected %s, got %s",
+				Shm::typeString(shmVarType).c_str(),
+				Shm::typeString(msgVarType).c_str());
 	}
 
 	switch (shmVarType) {
@@ -113,7 +113,7 @@ void Remote::readStream(Stream* stream) {
 			shmVar->set(msg.value.boolValue);
 			break;
 		default:
-			Logger::error("Unsupported remote var type");
+			Log::error("Unsupported remote var type");
 			break;
 	}
 }
@@ -135,7 +135,7 @@ void Remote::sendVar(Stream* stream, Shm::Var* var) {
 			msg.value.boolValue = var->getBool();
 			break;
 		default:
-			Logger::error("Unsupported remote var type");
+			Log::error("Unsupported remote var type");
 			return;
 	}
 
@@ -143,7 +143,7 @@ void Remote::sendVar(Stream* stream, Shm::Var* var) {
 	pb_get_encoded_size(&encodedSize, ShmMsg_fields, &msg);
 	constexpr int bufSize = sizeof(m_messageBuffer) / sizeof(m_messageBuffer[0]);
 	if (encodedSize > (bufSize - 1)) {
-		Logger::error("Encoded remote message too large to send");
+		Log::error("Encoded remote message too large to send");
 		return;
 	}
 

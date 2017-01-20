@@ -1,11 +1,11 @@
-#include "logger.h"
+#include "log.h"
 #include "mpu9250.h"
 #include "imu.h"
 
 Imu::Imu() {
-	Logger::info("Initializing IMU...");
+	Log::info("Initializing IMU...");
 	MPU9250::setup();
-	Logger::info("Done initializing IMU");
+	Log::info("Done initializing IMU");
 }
 
 void Imu::operator()() {

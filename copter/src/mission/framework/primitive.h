@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../log.h"
 #include "task.h"
 
 namespace Logger {
@@ -26,40 +27,8 @@ class Function : public BaseTask {
 		std::function<void()> m_func;
 };
 
-class Log : public BaseTask {
-	public:
-		Log(Logger::Level level, std::string msg);
-		virtual ~Log();
-		bool onRun() override;
-
-	private:
-		Logger::Level m_level;
-		std::string m_msg;
-};
-
-class Debug : public Log {
-	public:
-		Debug(std::string msg);
-};
-
-class Info : public Log {
-	public:
-		Info(std::string msg);
-};
-
-class Warn : public Log {
-	public:
-		Warn(std::string msg);
-};
-
-class Error : public Log {
-	public:
-		Error(std::string msg);
-};
-
-class Fatal : public Log {
-	public:
-		Fatal(std::string msg);
-};
+//struct Debug {
+	//Debug(std::string msg, ...);
+//};
 
 } // namespace mission

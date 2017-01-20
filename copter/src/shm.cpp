@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "logger.h"
+#include "log.h"
 #include "shm.h"
 
 Shm::Var::Var(std::string name, int value, int tag):
@@ -90,8 +90,8 @@ std::string Shm::typeString(Var::Type type) {
 void Shm::Var::verifyType(Type type) {
 	std::string typeName;
 	if (type != m_type) {
-		Logger::fatal("Variable {} has type {}, not type {}",
-				m_name, typeString(m_type), typeString(type));
+		Log::fatal("Variable %s has type %s not type %s",
+				m_name.c_str(), typeString(m_type).c_str(), typeString(type).c_str());
 	}
 }
 
@@ -109,7 +109,7 @@ std::string Shm::Group::name() {
 Shm::Var* Shm::Group::var(std::string name) {
 	auto var = varIfExists(name);
 	if (!var) {
-		Logger::fatal("Variable {} not found", name);
+		Log::fatal("Variable %s not found", name.c_str());
 	}
 
 	return var;
@@ -135,7 +135,7 @@ std::vector<Shm::Var*> Shm::Group::vars() {
 Shm::Var* Shm::var(std::string name) {
 	auto v = varIfExists(name);
 	if (!v) {
-		Logger::fatal("Variable {} not found", name);
+		Log::fatal("Variable %s not found", name.c_str());
 	}
 
 	return v;
@@ -144,7 +144,7 @@ Shm::Var* Shm::var(std::string name) {
 Shm::Var* Shm::var(int tag) {
 	auto v = varIfExists(tag);
 	if (!v) {
-		Logger::fatal("Variable tag {} not found", tag);
+		Log::fatal("Variable tag %d not found", tag);
 	}
 
 	return v;
@@ -178,7 +178,7 @@ Shm::Var* Shm::varIfExists(int tag) {
 Shm::Group* Shm::group(std::string name) {
 	auto g = groupIfExists(name);
 	if (!g) {
-		Logger::fatal("Group {} not found", name);
+		Log::fatal("Group %s not found", name.c_str());
 	}
 
 	return g;
