@@ -1,5 +1,18 @@
 #include "log.h"
 
+size_t BufferPrint::write(uint8_t b) {
+	return write(&b, 1);
+}
+
+size_t BufferPrint::write(const uint8_t* buffer, size_t size) {
+	m_buf.insert(m_buf.end(), buffer, &buffer[size]);
+	return size;
+}
+
+void BufferPrint::flush() {
+	Serial.write(m_buf.data(), m_buf.size());
+}
+
 // Unfortunately these near-duplicates are necessary to pass va_list
 
 void Log::debug(std::string str, ...) {
@@ -38,7 +51,7 @@ void Log::fatal(std::string str, ...) {
 }
 
 // Original aprintf from https://gist.github.com/EleotleCram/eb586037e2976a8d9884
-void Log::log(Level level, std::string str, va_list argv) {
+void Log::log(Level level, std::string str, va_list argv, Print& printer) {
 	const char* tag = "";
 	switch (level) {
 		case Level::DEBUG:
@@ -57,7 +70,7 @@ void Log::log(Level level, std::string str, va_list argv) {
 			tag = "fatal";
 			break;
 	}
-	Serial.print('['); Serial.print(tag); Serial.print("]\t");
+	printer.print('['); printer.print(tag); printer.print("]\t");
 
 	const char* cstr = str.c_str();
 	int i, j, count = 0;
@@ -66,20 +79,20 @@ void Log::log(Level level, std::string str, va_list argv) {
 		if (cstr[i] == '%') {
 			count++;
 
-			Serial.write(reinterpret_cast<const uint8_t*>(cstr+j), i-j);
+			printer.write(reinterpret_cast<const uint8_t*>(cstr+j), i-j);
 
 			switch (cstr[++i]) {
-				case 'd': Serial.print(va_arg(argv, int));
+				case 'd': printer.print(va_arg(argv, int));
 					break;
-				case 'l': Serial.print(va_arg(argv, long));
+				case 'l': printer.print(va_arg(argv, long));
 					break;
-				case 'f': Serial.print(va_arg(argv, double));
+				case 'f': printer.print(va_arg(argv, double));
 					break;
-				case 'c': Serial.print((char) va_arg(argv, int));
+				case 'c': printer.print((char) va_arg(argv, int));
 					break;
-				case 's': Serial.print(va_arg(argv, char *));
+				case 's': printer.print(va_arg(argv, char *));
 					break;
-				case '%': Serial.print("%");
+				case '%': printer.print("%");
 					break;
 				default:;
 			};
@@ -89,9 +102,9 @@ void Log::log(Level level, std::string str, va_list argv) {
 	};
 
 	if (i > j) {
-		Serial.write(reinterpret_cast<const uint8_t*>(cstr+j), i-j);
+		printer.write(reinterpret_cast<const uint8_t*>(cstr+j), i-j);
 	}
-	Serial.println();
+	printer.println();
 
 	if (level == Level::FATAL) {
 		exit(1);

@@ -3,10 +3,6 @@
 #include "../../log.h"
 #include "task.h"
 
-namespace Logger {
-	enum class Level;
-}
-
 namespace mission {
 
 class NoOp : public BaseTask {
@@ -27,8 +23,35 @@ class Function : public BaseTask {
 		std::function<void()> m_func;
 };
 
-//struct Debug {
-	//Debug(std::string msg, ...);
-//};
+class Logger : BaseTask {
+	public:
+		bool onRun() override;
+
+	protected:
+		void write(Log::Level level, std::string str, va_list argv);
+
+	private:
+		BufferPrint m_buffer;
+};
+
+struct Debug : Logger {
+	Debug(std::string str, ...);
+};
+
+struct Info : Logger {
+	Info(std::string str, ...);
+};
+
+struct Warn : Logger {
+	Warn(std::string str, ...);
+};
+
+struct Error : Logger {
+	Error(std::string str, ...);
+};
+
+struct Fatal : Logger {
+	Fatal(std::string str, ...);
+};
 
 } // namespace mission
