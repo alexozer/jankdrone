@@ -1,9 +1,20 @@
 #pragma once
 
-constexpr int FRONT_LED_PIN = 20,
-		  LEFT_LED_PIN = 21,
-		  RIGHT_LED_PIN = 22,
-		  BACK_LED_PIN = 23;
+constexpr float COPTER_RADIUS = 0.26924;
+
+constexpr int NUM_THRUSTERS = 6,
+
+		  RIGHT_THRUSTER_PIN = 3,
+		  FRONT_RIGHT_THRUSTER_PIN = 23,
+		  FRONT_LEFT_THRUSTER_PIN = 4,
+		  LEFT_THRUSTER_PIN = 22,
+		  BACK_LEFT_THRUSTER_PIN = 6,
+		  BACK_RIGHT_THRUSTER_PIN = 5,
+
+		  MIN_THRUSTER_PULSE = 700,
+		  MAX_THRUSTER_PULSE = 2000;
+
+constexpr float FORCE_PER_THRUST = 3;
 
 constexpr int BLUEFRUIT_REQ_PIN = 10,
 		  BLUEFRUIT_RDY_PIN = 2,
@@ -16,18 +27,13 @@ constexpr int IMU_INT_PIN = 8,
 		  IMU_SDA_PIN = 17,
 		  IMU_SCL_PIN = 16;
 
-constexpr int MIN_THRUSTER_PULSE = 700,
-		  MAX_THRUSTER_PULSE = 2000;
-
-constexpr int FRONT_THRUSTER_PIN = 3,
-		  LEFT_THRUSTER_PIN = 4,
-		  RIGHT_THRUSTER_PIN = 5,
-		  BACK_THRUSTER_PIN = 6;
-
 constexpr int CALIBRATED_ADDRESS = 0;
 
 constexpr int VOLTAGE_PIN = 14,
-		  VOLTAGE_FACTOR = 4,
 		  BATTERY_CELLS = 3;
+constexpr float VOLTAGE_FACTOR = 4.01356;
 constexpr float LOW_BATTERY_VOLTAGE = 3.6 * BATTERY_CELLS,
 		  CRITICAL_BATTERY_VOLTAGE = 3.4 * BATTERY_CELLS;
+
+constexpr int LEDS_PIN = 21,
+		  NUM_LEDS = 60;

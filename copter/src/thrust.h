@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <Servo.h>
+#include "config.h"
 #include "shm.h"
 
 class Thrust {
@@ -23,5 +23,5 @@ class Thrust {
 				void thrustNoKillCheck(float thrustValue);
 		};
 
-		std::vector<Thruster> m_thrusters;
+		Thruster m_thrusters[NUM_THRUSTERS];
 };

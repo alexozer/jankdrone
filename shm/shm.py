@@ -9,10 +9,12 @@ untagged_shm = {
     },
 
     'thrusters': {
-        'front': 0.0,
-        'left': 0.0,
         'right': 0.0,
-        'back': 0.0,
+        'frontRight': 0.0,
+        'frontLeft': 0.0,
+        'left': 0.0,
+        'backLeft': 0.0,
+        'backRight': 0.0,
     },
 
     'controller': {

@@ -4,7 +4,7 @@
 
 #include "config.h"
 #include "shm.h"
-#include "logger.h"
+#include "log.h"
 #include "thrust.h"
 
 Thrust::Thruster::Thruster(int pin, Shm::Var* thrustValue): m_thrustValue{thrustValue} {
@@ -19,7 +19,7 @@ void Thrust::Thruster::operator()(float thrustValue) {
 	static auto calibrate = Shm::var("switches.calibrate");
 	if (calibrate->getBool()) {
 		EEPROM.write(CALIBRATED_ADDRESS, false);
-		Logger::fatal("Shutting down to calibrate");
+		Log::fatal("Shutting down to calibrate");
 	}
 
 	static auto softKill = Shm::var("switches.softKill");
@@ -39,10 +39,12 @@ void Thrust::Thruster::thrustNoKillCheck(float thrustValue) {
 }
 
 Thrust::Thrust(): m_thrusters{
-		Thruster(FRONT_THRUSTER_PIN, Shm::var("thrusters.front")),
-		Thruster(LEFT_THRUSTER_PIN, Shm::var("thrusters.left")),
 		Thruster(RIGHT_THRUSTER_PIN, Shm::var("thrusters.right")),
-		Thruster(BACK_THRUSTER_PIN, Shm::var("thrusters.back")),
+		Thruster(FRONT_RIGHT_THRUSTER_PIN, Shm::var("thrusters.frontRight")),
+		Thruster(FRONT_LEFT_THRUSTER_PIN, Shm::var("thrusters.frontLeft")),
+		Thruster(LEFT_THRUSTER_PIN, Shm::var("thrusters.left")),
+		Thruster(BACK_LEFT_THRUSTER_PIN, Shm::var("thrusters.backLeft")),
+		Thruster(BACK_RIGHT_THRUSTER_PIN, Shm::var("thrusters.backRight")),
 } {
 	if (!EEPROM.read(CALIBRATED_ADDRESS)) {
 		EEPROM.write(CALIBRATED_ADDRESS, true); // Write early in case we're interrupted
@@ -51,12 +53,12 @@ Thrust::Thrust(): m_thrusters{
 		bool lastSoftKill = softKill->getBool();
 		softKill->set(false);
 
-		Logger::info("Calibrating thrusters...");
+		Log::info("Calibrating thrusters...");
 		for (auto& t : m_thrusters) t(1);
 		delay(2500); // Wait for ESC to power on and register first input
 		for (auto& t : m_thrusters) t(0);
 		delay(500); // Wait for ESC to register second input
-		Logger::info("Done calibrating thrusters");
+		Log::info("Done calibrating thrusters");
 
 		softKill->set(lastSoftKill);
 	}
