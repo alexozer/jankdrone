@@ -11,30 +11,35 @@ class Log {
 		static void debug(std::string format, Args&& ...args) {
 			Serial.print("[debug]\t");
 			Serial.printf(format.c_str(), std::forward<Args>(args)...);
+			Serial.println();
 		}
 
 		template <typename... Args>
 		static void info(std::string format, Args&& ...args) {
 			Serial.print("[info]\t");
 			Serial.printf(format.c_str(), std::forward<Args>(args)...);
+			Serial.println();
 		}
 
 		template <typename... Args>
 		static void warn(std::string format, Args&& ...args) {
 			Serial.print("[warn]\t");
 			Serial.printf(format.c_str(), std::forward<Args>(args)...);
+			Serial.println();
 		}
 
 		template <typename... Args>
 		static void error(std::string format, Args&& ...args) {
 			Serial.print("[error]\t");
 			Serial.printf(format.c_str(), std::forward<Args>(args)...);
+			Serial.println();
 		}
 
 		template <typename... Args>
 		static void fatal(std::string format, Args&& ...args) {
 			Serial.print("[fatal]\t");
 			Serial.printf(format.c_str(), std::forward<Args>(args)...);
+			Serial.println();
 			exit(1);
 		}
 

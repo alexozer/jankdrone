@@ -4,5 +4,4 @@
 extern "C" {
    int _getpid();
    int _kill(int, int);
-   int _write_r();
 }
