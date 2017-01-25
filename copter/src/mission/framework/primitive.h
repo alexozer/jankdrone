@@ -17,41 +17,56 @@ class NoOp : public BaseTask {
 class Function : public BaseTask {
 	public:
 		Function(std::function<void()> func);
-		bool onRun() override;
+		bool onFirstRun() override;
 
 	private:
 		std::function<void()> m_func;
 };
 
-class Logger : BaseTask {
+class Logger : Function {
 	public:
-		bool onRun() override;
-
-	protected:
-		void write(Log::Level level, std::string str, va_list argv);
-
-	private:
-		BufferPrint m_buffer;
+		Logger(Log::Level level, std::string msg);
 };
 
-struct Debug : Logger {
-	Debug(std::string str, ...);
+class Debug : Function {
+	public:
+		Debug(std::string msg);
 };
 
-struct Info : Logger {
-	Info(std::string str, ...);
+class Info : Function {
+	public:
+		Info(std::string msg);
 };
 
-struct Warn : Logger {
-	Warn(std::string str, ...);
+class Warn : Function {
+	public:
+		Warn(std::string msg);
 };
 
-struct Error : Logger {
-	Error(std::string str, ...);
+class Error : Function {
+	public:
+		Error(std::string msg);
 };
 
-struct Fatal : Logger {
-	Fatal(std::string str, ...);
+class Fatal : Function {
+	public:
+		Fatal(std::string msg);
 };
+
+// TODO support printf-like arguments in logging tasks
+//class Logger : Function {
+	//public:
+		//template <typename... Args>
+		//Logger(std::string format, Args&&... args):
+			//Function{[=] {
+				//Log::debug(format, std::forward<Args>(args)...);
+			//}} {}
+//};
+
+//struct Debug : Logger {
+	//template <typename... Args>
+	//Debug(std::string str, Args&&... args):
+		//Logger{str, std::forward<Args>(args)...} {}
+//};
 
 } // namespace mission
