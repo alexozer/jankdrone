@@ -9,6 +9,7 @@
 
 Thrust::Thruster::Thruster(int pin, Shm::Var* thrustValue): m_thrustValue{thrustValue} {
 	m_esc.attach(pin);
+	(*this)(0);
 }
 
 void Thrust::Thruster::operator()() {
