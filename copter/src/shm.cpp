@@ -29,6 +29,14 @@ int Shm::Var::tag() {
 	return m_tag;
 }
 
+std::string Shm::Var::path() {
+	return m_group->name() + "." + m_name;
+}
+
+Shm::Group* Shm::Var::group() {
+	return m_group;
+}
+
 void Shm::Var::set(int value) {
 	if (m_type == Type::FLOAT) {
 		set((float)value);
@@ -71,6 +79,10 @@ bool Shm::Var::getBool() {
 std::string Shm::Var::getString() {
 	verifyType(Type::STRING);
 	return m_stringValue;
+}
+
+void Shm::Var::setGroup(Group* group) {
+	m_group = group;
 }
 
 std::string Shm::typeString(Var::Type type) {
@@ -206,6 +218,7 @@ Shm::Shm(std::vector<Group> groups) {
 		auto& placedG = m_groups.emplace(g.name(), g).first->second;
 		for (auto var : placedG.vars()) {
 			m_tagMap[var->tag()] = var;
+			var->setGroup(&placedG);
 		}
 	}
 }

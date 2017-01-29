@@ -23,5 +23,5 @@ class Thrust {
 				void thrustNoKillCheck(float thrustValue);
 		};
 
-		Thruster m_thrusters[NUM_THRUSTERS];
+		std::vector<Thruster> m_thrusters;
 };

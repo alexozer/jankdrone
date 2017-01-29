@@ -41,10 +41,10 @@ func NewHandheld(out chan<- []BoundVar) *Handheld {
 	this.out = out
 
 	this.softKill = handheldVar{groupName: "switches", varName: "softKill"}
-	this.force = handheldVar{groupName: "controller", varName: "verticalForce"}
-	this.yaw = handheldVar{groupName: "controller", varName: "yawDesire"}
-	this.pitch = handheldVar{groupName: "controller", varName: "pitchDesire"}
-	this.roll = handheldVar{groupName: "controller", varName: "rollDesire"}
+	this.force = handheldVar{groupName: "desires", varName: "force"}
+	this.yaw = handheldVar{groupName: "desires", varName: "yaw"}
+	this.pitch = handheldVar{groupName: "desires", varName: "pitch"}
+	this.roll = handheldVar{groupName: "desires", varName: "roll"}
 
 	this.vars = []*handheldVar{
 		&this.softKill,

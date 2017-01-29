@@ -17,9 +17,9 @@ void Thrust::Thruster::operator()() {
 }
 
 void Thrust::Thruster::operator()(float thrustValue) {
-	static auto calibrate = Shm::var("switches.calibrate");
+	static auto calibrate = Shm::var("switches.calibrateEscs");
 	if (calibrate->getBool()) {
-		EEPROM.write(CALIBRATED_ADDRESS, false);
+		EEPROM.update(CALIBRATED_ESCS_ADDRESS, false);
 		Log::fatal("Shutting down to calibrate");
 	}
 
@@ -39,20 +39,24 @@ void Thrust::Thruster::thrustNoKillCheck(float thrustValue) {
 	m_esc.writeMicroseconds(roundedMicros);
 }
 
-Thrust::Thrust(): m_thrusters{
-		Thruster(RIGHT_THRUSTER_PIN, Shm::var("thrusters.right")),
-		Thruster(FRONT_RIGHT_THRUSTER_PIN, Shm::var("thrusters.frontRight")),
-		Thruster(FRONT_LEFT_THRUSTER_PIN, Shm::var("thrusters.frontLeft")),
-		Thruster(LEFT_THRUSTER_PIN, Shm::var("thrusters.left")),
-		Thruster(BACK_LEFT_THRUSTER_PIN, Shm::var("thrusters.backLeft")),
-		Thruster(BACK_RIGHT_THRUSTER_PIN, Shm::var("thrusters.backRight")),
-} {
-	if (!EEPROM.read(CALIBRATED_ADDRESS)) {
-		EEPROM.write(CALIBRATED_ADDRESS, true); // Write early in case we're interrupted
+Thrust::Thrust() {
+	m_thrusters.reserve(NUM_THRUSTERS);
+	for (auto v : Shm::group("thrusters")->vars()) {
+		int i = atoi(v->name().substr(1).c_str());
+		if (i >= 0 && i < NUM_THRUSTERS) {
+			m_thrusters.emplace_back(THRUSTER_PINS[i], v);
+		}
+	}
+
+	if (!EEPROM.read(CALIBRATED_ESCS_ADDRESS)) {
+		EEPROM.update(CALIBRATED_ESCS_ADDRESS, true); // Write early in case we're interrupted
 
 		static auto softKill = Shm::var("switches.softKill");
 		bool lastSoftKill = softKill->getBool();
 		softKill->set(false);
+
+		static auto calibrating = Shm::var("thrust.calibrating");
+		calibrating->set(true);
 
 		Log::info("Calibrating thrusters...");
 		for (auto& t : m_thrusters) t(1);
@@ -61,6 +65,7 @@ Thrust::Thrust(): m_thrusters{
 		delay(500); // Wait for ESC to register second input
 		Log::info("Done calibrating thrusters");
 
+		calibrating->set(false);
 		softKill->set(lastSoftKill);
 	}
 }

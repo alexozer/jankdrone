@@ -1,8 +1,7 @@
 #include "teensy.h"
 #include <Arduino.h>
-#include <fmt/format.h>
 #include "thread.h"
-#include "logger.h"
+#include "log.h"
 #include "shm.h"
 
 #include "led.h"
@@ -13,22 +12,20 @@
 #include "power.h"
 
 struct Main {
-	Remote remote;
-	Imu imu;
-	Controller controller;
 	Thrust thrust;
-	Led led;
+	Imu imu;
+	Remote remote;
+	Controller controller;
 
 	ThreadController threadController;
 
 	Main(): threadController{
+		Thread([&] { thrust(); }, Thread::SECOND / 1000),
 		Thread([&] { remote(); }, 0),
 		Thread([&] { imu(); }, 0),
-		Thread([&] { controller(); }, 1),
-		Thread([&] { thrust(); }, 1),
-		Thread(&Power::readVoltage, 100),
-		Thread([&] { led(); }, 1000 / 60),
-		Thread([&] { led.showStatus(); }, 1000 / 60),
+		Thread([&] { controller(); }, Thread::SECOND / 1000),
+		Thread(&Power::readVoltage, Thread::SECOND / 10),
+		Thread(&Led::show, Thread::SECOND / 30),
 	} {}
 
 	void operator()() { while (true) threadController(); }
@@ -36,7 +33,8 @@ struct Main {
 
 void setup() {
 	Serial.begin(115200);
-
+	//while (!Serial);
+	
 	static Main main;
 	main();
 }

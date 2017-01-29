@@ -26,16 +26,25 @@ void PID::reset() {
 	m_firstRun = true;
 }
 
+float pfmod(float a, float mod) {
+	float modded = std::fmod(a, mod);
+	if (modded < 0) modded += mod;
+	return modded;
+}
+
 float angleDiff(float a, float b) {
-    float diff = std::fmod((a - b), 360);
-	if (diff < 0) diff += 360;
+    float diff = pfmod(a - b, 360);
 	return (diff < 180) ? diff : diff - 360;
 }
 
 bool withinDeadband(float a, float b, float deadband, bool useMod) {
 	if (useMod) {
-		return abs(angleDiff(a, b)) < deadband;
+		return fabs(angleDiff(a, b)) < deadband;
 	} else {
-		return abs(a - b) < deadband;
+		return fabs(a - b) < deadband;
 	}
+}
+
+bool fequals(float a, float b) {
+	return withinDeadband(a, b, 0.000001, false);
 }

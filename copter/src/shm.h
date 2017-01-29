@@ -8,7 +8,11 @@
 class Shm {
 	public:
 
+		class Group;
+
 		class Var {
+			friend class Shm;
+
 			public:
 				enum class Type {INT, FLOAT, BOOL, STRING};
 
@@ -21,6 +25,8 @@ class Shm {
 				std::string name();
 				Type type();
 				int tag();
+				std::string path();
+				Group* group();
 
 				void set(int value);
 				void set(float value);
@@ -33,10 +39,14 @@ class Shm {
 				bool getBool();
 				std::string getString();
 
+			protected:
+				void setGroup(Group* group);
+
 			private:
 				std::string m_name;
 				Type m_type;
 				int m_tag;
+				Group* m_group;
 
 				union {
 					int m_intValue;
