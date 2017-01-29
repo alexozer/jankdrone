@@ -1,11 +1,11 @@
 #include <Arduino.h>
 #include "thread.h"
 
-Thread::Thread(std::function<void()> func, unsigned long interval, bool useMillis):
-	m_func{func}, m_interval{interval}, m_hasRun{false}, m_useMillis{useMillis} {}
+Thread::Thread(std::function<void()> func, unsigned long intervalMicros):
+	m_func{func}, m_interval{intervalMicros}, m_hasRun{false} {}
 
 void Thread::operator()() {
-	auto t = m_useMillis ? millis() : micros();
+	auto t = micros();
 	if (!m_hasRun || t - m_lastTime >= m_interval) {
 		m_func();
 		m_hasRun = true;

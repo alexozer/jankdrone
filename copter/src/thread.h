@@ -5,7 +5,9 @@
 
 class Thread {
 	public:
-		Thread(std::function<void()> func, unsigned long interval, bool useMillis = true);
+		static constexpr int SECOND = 1e6;
+
+		Thread(std::function<void()> func, unsigned long intervalMicros);
 		void operator()();
 
 	private:
@@ -13,7 +15,6 @@ class Thread {
 		unsigned long m_interval;
 		unsigned long m_lastTime;
 		bool m_hasRun;
-		bool m_useMillis;
 };
 
 class ThreadController {
