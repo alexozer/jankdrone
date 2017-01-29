@@ -5,53 +5,67 @@ Var = namedtuple('Var', ['value', 'tag'])
 untagged_shm = {
     'switches': {
         'softKill': True,
-        'calibrate': False,
+        'calibrateEscs': False,
+        'calibrateImu': False,
     },
 
+    # Specified from 0 degrees and moving counterclockwise
+    # More vars may be added as necessary to satisfy thruster count constant,
+    # and extra vars are okay
     'thrusters': {
-        'right': 0.0,
-        'frontRight': 0.0,
-        'frontLeft': 0.0,
-        'left': 0.0,
-        'backLeft': 0.0,
-        'backRight': 0.0,
+        't0': 0.0,
+        't1': 0.0,
+        't2': 0.0,
+        't3': 0.0,
+        't4': 0.0,
+        't5': 0.0,
+        't6': 0.0,
+        't7': 0.0,
+    },
+
+    'desires': {
+        'force': 0.0,
+        'yaw': 0.0,
+        'pitch': 0.0,
+        'roll': 0.0,
+    },
+
+    'yawSettings': {
+        'enabled': False,
+        'p': 0.0,
+        'i': 0.0,
+        'd': 0.0,
+    },
+
+    'pitchSettings': {
+        'enabled': False,
+        'p': 0.0,
+        'i': 0.0,
+        'd': 0.0,
+    },
+
+    'rollSettings': {
+        'enabled': False,
+        'p': 0.0,
+        'i': 0.0,
+        'd': 0.0,
     },
 
     'controller': {
         'enabled': False,
-        'verticalForce': 0.0,
-
-        'yawEnabled': False,
-        'yawDesire': 0.0,
-        'yawP': 1.0,
-        'yawI': 0.0,
-        'yawD': 0.0,
-
-        'pitchEnabled': False,
-        'pitchDesire': 0.0,
-        'pitchP': 1.0,
-        'pitchI': 0.0,
-        'pitchD': 0.0,
-
-        'rollEnabled': False,
-        'rollDesire': 0.0,
-        'rollP': 1.0,
-        'rollI': 0.0,
-        'rollD': 0.0,
     },
 
-    'leds': {
-        'front': 0,
-        'left': 0,
-        'right': 0,
-        'back': 0,
-    },
-
-    'placement': {
+    'controllerOut': {
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
+    },
+
+    'placement': {
         'altitude': 0.0,
+        'yaw': 0.0,
+        'pitch': 0.0,
+        'roll': 0.0,
     },
 
     'temperature': {
@@ -60,8 +74,8 @@ untagged_shm = {
 
     'power': {
         'voltage': 0.0,
-        'low': True,
-        'critical': True,
+        'low': False,
+        'critical': False,
     },
 }
 
