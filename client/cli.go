@@ -19,7 +19,7 @@ func NewCli(in <-chan BoundVar, out chan<- []BoundVar) *Cli {
 	return &Cli{in, out}
 }
 
-var cliRegex = regexp.MustCompile(`^(([A-Za-z]*)\.([A-Za-z]*)(\s+(\S+))?)|(\S*)$`)
+var cliRegex = regexp.MustCompile(`^(([A-Za-z]+\w*)?\.([A-Za-z]+\w*)?(\s+(\S+))?)|(\S*)$`)
 
 var cliShortcuts = map[string]BoundVar{
 	"k": MustBindVar("switches", "softKill", true),
