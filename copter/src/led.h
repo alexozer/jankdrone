@@ -1,29 +1,19 @@
 #pragma once
 
-#include <vector>
-#include <initializer_list>
+#define FASTLED_INTERNAL // Disable FastLED #pragma messages
+#include <FastLED.h>
 #include "shm.h"
+#include "config.h"
 
 class Led {
 	public:
-		Led();
-
-		void operator()();
-		void showStatus();
+		static void off();
+		static void show();
+		static void calibration();
 
 	private:
+		CRGB m_leds[NUM_LEDS];
 
-		class PieceFunc {
-			public:
-				typedef std::pair<int, int> Coord;
-
-				PieceFunc(std::initializer_list<Coord> pts);
-				int operator()(int time);
-
-			private:
-				std::vector<Coord> m_pts;
-		};
-
-		Shm::Var *m_front, *m_back, *m_left, *m_right;
-		PieceFunc m_unkilled;
+		Led();
+		static Led& get();
 };
