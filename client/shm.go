@@ -11,7 +11,16 @@ type BoundVar struct {
 }
 
 func (this BoundVar) String() string {
-	return fmt.Sprintf("%s.%s = %v", this.Group, this.Name, this.Value)
+	return fmt.Sprintf("%s.%s = %s", this.Group, this.Name, this.ValueString())
+}
+
+func (this BoundVar) ValueString() string {
+	switch value := this.Value.(type) {
+	case float64:
+		return fmt.Sprintf("%.2f", value)
+	default:
+		return fmt.Sprintf("%v", value)
+	}
 }
 
 func BindVar(groupName, varName string, value interface{}) (BoundVar, error) {

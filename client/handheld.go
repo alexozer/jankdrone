@@ -29,16 +29,18 @@ func (this *handheldVar) AddIfNew(vars []BoundVar) []BoundVar {
 }
 
 type Handheld struct {
-	port *serial.Port
-	out  chan<- []BoundVar
+	port   *serial.Port
+	out    chan<- []BoundVar
+	status chan<- string
 
 	softKill, force, yaw, pitch, roll handheldVar
 	vars                              []*handheldVar
 }
 
-func NewHandheld(out chan<- []BoundVar) *Handheld {
+func NewHandheld(out chan<- []BoundVar, status chan<- string) *Handheld {
 	this := new(Handheld)
 	this.out = out
+	this.status = status
 
 	this.softKill = handheldVar{groupName: "switches", varName: "softKill"}
 	this.force = handheldVar{groupName: "desires", varName: "force"}
@@ -72,14 +74,14 @@ func (this *Handheld) startSession() {
 		return
 	}
 	defer this.port.Close()
-	fmt.Println("Handheld connected")
+	this.status <- "Handheld connected"
 
 	for {
 		var softKill bool
 		var leftX, leftY, rightX, rightY float64
 		_, err = fmt.Fscanln(this.port, &softKill, &leftX, &leftY, &rightX, &rightY)
 		if err == io.EOF {
-			fmt.Println("Handeld disconnected")
+			this.status <- "Handeld disconnected"
 			return
 		} else if err != nil {
 			// We've probably read during a startup transient period

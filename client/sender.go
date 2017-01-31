@@ -15,14 +15,17 @@ type Sender struct {
 	varsOut    chan<- BoundVar
 	encodedIn  chan []byte
 	encodedOut chan [][]byte
+
+	status chan string
 }
 
-func NewSender(varsIn <-chan []BoundVar, varsOut chan<- BoundVar) *Sender {
+func NewSender(varsIn <-chan []BoundVar, varsOut chan<- BoundVar, status chan string) *Sender {
 	encodedIn, encodedOut := make(chan []byte), make(chan [][]byte)
 	return &Sender{
-		NewBluetooth(encodedOut, encodedIn),
+		NewBluetooth(encodedOut, encodedIn, status),
 		varsIn, varsOut,
 		encodedIn, encodedOut,
+		status,
 	}
 }
 
@@ -59,7 +62,7 @@ func (this *Sender) write() {
 				log.Fatal("Failed to encode shm message:", err)
 			}
 			if len(encodedVar) > math.MaxUint8 {
-				fmt.Println("Failed to send encoded variable; length too long")
+				this.status <- "Failed to send encoded variable; length too long"
 				continue
 			}
 			framedVar := append([]byte{byte(len(encodedVar))}, encodedVar...)
@@ -74,7 +77,7 @@ func (this *Sender) read() {
 	for encodedVar := range this.encodedIn {
 		shmMsg := new(shm.ShmMsg)
 		if proto.Unmarshal(encodedVar[1:], shmMsg) != nil {
-			fmt.Println("Unable to unmarshal remote message")
+			this.status <- "Unable to unmarshal remote message"
 			continue
 		}
 
@@ -87,12 +90,13 @@ func (this *Sender) read() {
 		case *shm.ShmMsg_BoolValue:
 			outValue = inValue.BoolValue
 		default:
-			fmt.Println("Unknown remote var type")
+			this.status <- "Unknown remote var type"
+			continue
 		}
 
 		v, err := BindVarTag(int(*shmMsg.Tag), outValue)
 		if err != nil {
-			fmt.Println("Failed to bind remote var:", err)
+			this.status <- fmt.Sprint("Failed to bind remote var:", err)
 			continue
 		}
 		this.varsOut <- v
