@@ -43,7 +43,7 @@ The jankest quadcopter the world has ever seen.
 	- [x] Bluefruit mount
 	- [x] ESC plugs
 	- [x] Voltage monitor wire
-	- [ ] LED strips
+	- [x] LED strips
 - Power board
 	- [x] 12V power rail
 	- [x] Voltage measurement source
@@ -52,11 +52,15 @@ The jankest quadcopter the world has ever seen.
 ## Mechanical
 - Version 1 (failed, too heavy)
 	- [x] PVC frame
-	- [x] PVC tube thruster mounts
+	- [x] 4 PVC tube thruster mounts
 	- [x] Metal sheet electronics mount
 - Version 2 (failed, too heavy, thrust blockage)
 	- [x] Metal sheet only frame
-	- [x] Thrusters
+	- [x] 4 Thrusters
 	- [x] Landing posts
 - Version 3
-	- [ ] Carbon fiber frame
+	- [x] Carbon fiber frame
+	- [x] 6 thruster mounts
+	- [x] LED strips
+	- [x] Tetrahedral-ish electronics shell
+	- [x] DJI Phantom-style props that don't vibrate like crazy
