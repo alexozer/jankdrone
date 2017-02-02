@@ -23,14 +23,13 @@ The jankest quadcopter the world has ever seen.
 		- [x] CLI
 - [x] IMU readings
 - Controller
-	- [x] Quadcopter support
-	- [ ] Hexcopter (or 2n-copter) support
+	- [x] Hexcopter / 2n-copter support
 - Thrust writer
 	- [x] Basic linear writing
 	- [x] Calibration
 	- [ ] Force-thrust function from bollard-poll
 - [x] Voltage measurement
-- [ ] LED strips
+- [x] LED strips
 - [ ] Deadman (kill / land on disconnection, critical battery)
 - Autonomous
 	- [x] Mission framework
