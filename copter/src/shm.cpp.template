@@ -145,8 +145,8 @@ std::vector<Shm::Var*> Shm::Group::vars() {
 
 std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 	std::unordered_map<int, Shm::Var*> indexMap;
-	int minI = std::numeric_limits<int>::max();
-	int maxI = std::numeric_limits<int>::min();
+	int minI = std::numeric_limits<int>::max;
+	int maxI = std::numeric_limits<int>::min;
 	for (auto& vItem : m_vars) {
 		auto v = &vItem.second;
 		auto name = v->name();
@@ -172,18 +172,9 @@ std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 }
 
 Shm::Shm(): m_groups{
-	{"controller", &controller},
-	{"controllerOut", &controllerOut},
-	{"desires", &desires},
-	{"led", &led},
-	{"pitchConf", &pitchConf},
-	{"placement", &placement},
-	{"power", &power},
-	{"rollConf", &rollConf},
-	{"switches", &switches},
-	{"temperature", &temperature},
-	{"thrusters", &thrusters},
-	{"yawConf", &yawConf},
+	<!--(for g_name, g_vars in sorted(shm.items()))-->
+	{"$!g_name!$", &$!g_name!$},
+	<!--(end)-->
 } {
 	for (auto& g : m_groups) {
 		for (auto v : g.second->vars()) {
@@ -261,167 +252,34 @@ std::vector<Shm::Group*> Shm::groups() {
 	return gs;
 }
 
+	<!--(macro CVALUE)-->
+<!--(if value is True)-->
+true#!
+<!--(elif value is False)-->
+false#!
+<!--(elif isinstance(value, str))-->
+"$!value!$"#!
+<!--(else)-->
+$!value!$#!
+<!--(end)-->
+	<!--(end)-->
 
-Shm::Group_controller::Group_controller():
-	Group{"controller", {
-		{"enabled", this, &enabled, 0},
+<!--(for g_name, g_vars in sorted(shm.items()))-->
+Shm::Group_$!g_name!$::Group_$!g_name!$():
+	Group{"$!g_name!$", {
+		<!--(for v_name, v_info in sorted(g_vars.items()))-->
+		{"$!v_name!$", this, &$!v_name!$, $!v_info.tag!$},
+		<!--(end)-->
 	}},
 
-	enabled{false}
+$!setvar("sortedVars", "list(sorted(g_vars.items()))")!$#!
+	<!--(for v_name, v_info in sortedVars[:-1])-->
+	$!v_name!${$!CVALUE(value=v_info.value)!$},
+	<!--(end)-->
+	$!sortedVars[-1][0]!${$!CVALUE(value=sortedVars[-1][1].value)!$}
 {}
 	
-Shm::Group_controllerOut::Group_controllerOut():
-	Group{"controllerOut", {
-		{"pitch", this, &pitch, 1},
-		{"roll", this, &roll, 2},
-		{"yaw", this, &yaw, 3},
-	}},
-
-	pitch{0.0},
-	roll{0.0},
-	yaw{0.0}
-{}
-	
-Shm::Group_desires::Group_desires():
-	Group{"desires", {
-		{"force", this, &force, 4},
-		{"pitch", this, &pitch, 5},
-		{"roll", this, &roll, 6},
-		{"yaw", this, &yaw, 7},
-	}},
-
-	force{0.0},
-	pitch{0.0},
-	roll{0.0},
-	yaw{0.0}
-{}
-	
-Shm::Group_led::Group_led():
-	Group{"led", {
-		{"brightness", this, &brightness, 8},
-		{"maxHue", this, &maxHue, 9},
-		{"minHue", this, &minHue, 10},
-		{"pattern", this, &pattern, 11},
-		{"periodMs", this, &periodMs, 12},
-	}},
-
-	brightness{8},
-	maxHue{188},
-	minHue{114},
-	pattern{1},
-	periodMs{250}
-{}
-	
-Shm::Group_pitchConf::Group_pitchConf():
-	Group{"pitchConf", {
-		{"d", this, &d, 13},
-		{"enabled", this, &enabled, 14},
-		{"i", this, &i, 15},
-		{"p", this, &p, 16},
-	}},
-
-	d{0.0},
-	enabled{false},
-	i{0.0},
-	p{0.01}
-{}
-	
-Shm::Group_placement::Group_placement():
-	Group{"placement", {
-		{"altitude", this, &altitude, 17},
-		{"pitch", this, &pitch, 18},
-		{"roll", this, &roll, 19},
-		{"yaw", this, &yaw, 20},
-	}},
-
-	altitude{0.0},
-	pitch{0.0},
-	roll{0.0},
-	yaw{0.0}
-{}
-	
-Shm::Group_power::Group_power():
-	Group{"power", {
-		{"critical", this, &critical, 21},
-		{"low", this, &low, 22},
-		{"voltage", this, &voltage, 23},
-	}},
-
-	critical{false},
-	low{false},
-	voltage{0.0}
-{}
-	
-Shm::Group_rollConf::Group_rollConf():
-	Group{"rollConf", {
-		{"d", this, &d, 24},
-		{"enabled", this, &enabled, 25},
-		{"i", this, &i, 26},
-		{"p", this, &p, 27},
-	}},
-
-	d{0.0},
-	enabled{false},
-	i{0.0},
-	p{0.01}
-{}
-	
-Shm::Group_switches::Group_switches():
-	Group{"switches", {
-		{"calibrateEscs", this, &calibrateEscs, 28},
-		{"calibrateImu", this, &calibrateImu, 29},
-		{"softKill", this, &softKill, 30},
-	}},
-
-	calibrateEscs{false},
-	calibrateImu{false},
-	softKill{true}
-{}
-	
-Shm::Group_temperature::Group_temperature():
-	Group{"temperature", {
-		{"gyro", this, &gyro, 31},
-	}},
-
-	gyro{0.0}
-{}
-	
-Shm::Group_thrusters::Group_thrusters():
-	Group{"thrusters", {
-		{"t0", this, &t0, 32},
-		{"t1", this, &t1, 33},
-		{"t2", this, &t2, 34},
-		{"t3", this, &t3, 35},
-		{"t4", this, &t4, 36},
-		{"t5", this, &t5, 37},
-		{"t6", this, &t6, 38},
-		{"t7", this, &t7, 39},
-	}},
-
-	t0{0.0},
-	t1{0.0},
-	t2{0.0},
-	t3{0.0},
-	t4{0.0},
-	t5{0.0},
-	t6{0.0},
-	t7{0.0}
-{}
-	
-Shm::Group_yawConf::Group_yawConf():
-	Group{"yawConf", {
-		{"d", this, &d, 40},
-		{"enabled", this, &enabled, 41},
-		{"i", this, &i, 42},
-		{"p", this, &p, 43},
-	}},
-
-	d{0.0},
-	enabled{false},
-	i{0.0},
-	p{0.001}
-{}
-	
+<!--(end)-->
 
 Shm& shm() {
 	static Shm shm;

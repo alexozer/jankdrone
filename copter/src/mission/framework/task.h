@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "../../shm.h"
 
 namespace mission {
 
@@ -10,7 +9,7 @@ class V {
 	public:
 		V(T v): m_source{Source::CONST}, m_constant{v} {}
 		V(std::function<T()> v): m_source{Source::FUNC}, m_func{v} {}
-		V(Shm::Var* v): m_source{Source::SHM}, m_shm{v} {}
+		V(T* v): m_source{Source::PTR}, m_ptr{v} {}
 
 		T operator()() {
 			switch (m_source) {
@@ -18,27 +17,21 @@ class V {
 					return m_constant;
 				case Source::FUNC:
 					return m_func();
-				case Source::SHM:
-					return readShm();
+				case Source::PTR:
+					return *m_ptr;
 				default:
 					return m_constant;
 			}
 		}
 
 	private:
-		enum class Source { CONST, FUNC, SHM };
+		enum class Source { CONST, FUNC, PTR };
 
+		// Can't use union; T may not be trivially destructable
 		Source m_source;
-		union {
-			T m_constant;
-			Shm::Var* m_shm;
-		};
+		T m_constant;
+		T* m_ptr;
 		std::function<T()> m_func;
-
-		T readShm() {
-			// Oh no! Unsupported shm type
-			return m_constant;
-		}
 };
 
 class BaseTask;

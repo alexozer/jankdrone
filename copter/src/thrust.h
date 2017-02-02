@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Servo.h>
-#include "config.h"
 #include "shm.h"
+#include "config.h"
 
 class Thrust {
 	public:
@@ -12,16 +12,17 @@ class Thrust {
 	private:
 		class Thruster {
 			public:
-				Thruster(int pin, Shm::Var* thrustValue);
+				Thruster(); // Default until thruster array initialized
+				Thruster(int pin, float* thrustValue);
 				void operator()(); // Thrust value from shm
 				void operator()(float thrustValue); // Thrust this value
 
 			private:
 				Servo m_esc;
-				Shm::Var* m_thrustValue;
+				float* m_thrustValue;
 
 				void thrustNoKillCheck(float thrustValue);
 		};
 
-		std::vector<Thruster> m_thrusters;
+		Thruster m_thrusters[Config::Thrust::NUM_THRUSTERS];
 };

@@ -25,7 +25,7 @@ struct Main {
 		Thread([&] { imu(); }, 0),
 		Thread([&] { controller(); }, Thread::SECOND / 1000),
 		Thread(&Power::readVoltage, Thread::SECOND / 10),
-		Thread(&Led::show, Thread::SECOND / 30),
+		Thread(&Led::showShm, Thread::SECOND / 60),
 	} {}
 
 	void operator()() { while (true) threadController(); }
@@ -33,7 +33,9 @@ struct Main {
 
 void setup() {
 	Serial.begin(115200);
-	//while (!Serial);
+	while (!Serial);
+
+	//Led::off();
 	
 	static Main main;
 	main();

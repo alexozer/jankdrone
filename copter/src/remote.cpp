@@ -4,9 +4,11 @@
 #include "config.h"
 #include "remote.h"
 
+using namespace Config::Ble;
+
 Remote::Remote():
 	m_firstRun{true},
-	m_bluetooth{BLUEFRUIT_REQ_PIN, BLUEFRUIT_RDY_PIN, BLUEFRUIT_RST_PIN},
+	m_bluetooth{REQ_PIN, RDY_PIN, RST_PIN},
 	m_lastState{ACI_EVT_DISCONNECTED} {}
 
 void Remote::operator()() {
@@ -45,8 +47,7 @@ void Remote::readBluetooth() {
 		readStream(&m_bluetooth);
 	} else if (m_lastState == ACI_EVT_CONNECTED) {
 		Log::warn("Softkilling due to bluetooth disconnect");
-		static auto softKill = Shm::var("switches.softKill");
-		softKill->set(true);
+		shm().switches.softKill = true;
 	}
 
 	m_lastState = state;
@@ -73,7 +74,7 @@ void Remote::readStream(Stream* stream) {
 				PB_GET_ERROR(&pbUpdateStream));
 	}
 
-	auto shmVar = Shm::varIfExists(msg.tag);
+	auto shmVar = shm().varIfExists(msg.tag);
 	if (!shmVar) {
 		Log::error("Remote var tag not found: %d", msg.tag);
 		return;
@@ -98,8 +99,8 @@ void Remote::readStream(Stream* stream) {
 	auto shmVarType = shmVar->type();
 	if (msgVarType != shmVarType) {
 		Log::error("Remote var type mismatch: expected %s, got %s",
-				Shm::typeString(shmVarType).c_str(),
-				Shm::typeString(msgVarType).c_str());
+				Shm::Var::typeString(shmVarType).c_str(),
+				Shm::Var::typeString(msgVarType).c_str());
 	}
 
 	switch (shmVarType) {
@@ -124,15 +125,15 @@ void Remote::sendVar(Stream* stream, Shm::Var* var) {
 	switch (var->type()) {
 		case Shm::Var::Type::INT:
 			msg.which_value = ShmMsg_intValue_tag;
-			msg.value.intValue = var->getInt();
+			msg.value.intValue = var->get<int>();
 			break;
 		case Shm::Var::Type::FLOAT:
 			msg.which_value = ShmMsg_floatValue_tag;
-			msg.value.floatValue = var->getFloat();
+			msg.value.floatValue = var->get<float>();
 			break;
 		case Shm::Var::Type::BOOL:
 			msg.which_value = ShmMsg_boolValue_tag;
-			msg.value.boolValue = var->getBool();
+			msg.value.boolValue = var->get<bool>();
 			break;
 		default:
 			Log::error("Unsupported remote var type");

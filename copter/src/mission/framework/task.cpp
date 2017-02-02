@@ -1,24 +1,5 @@
 #include "task.h"
 
-namespace mission {
-
-template <>
-int V<int>::readShm() {
-	return m_shm->getInt();
-}
-
-template <>
-float V<float>::readShm() {
-	return m_shm->getFloat();
-}
-
-template <>
-bool V<bool>::readShm() {
-	return m_shm->getBool();
-}
-
-} // namespace mission
-
 using namespace mission;
 
 BaseTask::BaseTask(): BaseTask{nullptr} {}

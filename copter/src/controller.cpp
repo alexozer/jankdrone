@@ -3,45 +3,24 @@
 #include "log.h"
 #include "controller.h"
 
+using namespace Config::Thrust;
+
 Controller::Controller():
-	m_enabledBefore{Shm::var("controller.enabled")->getBool()}, 
+	m_enabledBefore{shm().controller.enabled},
+	m_thrusters{NUM_THRUSTERS},
 
 	m_yawControl{"yaw"},
 	m_pitchControl{"pitch"},
 	m_rollControl{"roll"}
 {
-	initSettings();
 	initThrusters();
 	checkTorqueIndependence();
 }
 
-void Controller::initSettings() {
-	static auto yaw = Shm::group("yawSettings"),
-				pitch = Shm::group("pitchSettings"),
-				roll = Shm::group("rollSettings");
-
-	yaw->var("p")->set(DEFAULT_YAW_P);
-	yaw->var("i")->set(DEFAULT_YAW_I);
-	yaw->var("d")->set(DEFAULT_YAW_D);
-
-	pitch->var("p")->set(DEFAULT_PITCH_P);
-	pitch->var("i")->set(DEFAULT_PITCH_I);
-	pitch->var("d")->set(DEFAULT_PITCH_D);
-
-	roll->var("p")->set(DEFAULT_ROLL_P);
-	roll->var("i")->set(DEFAULT_ROLL_I);
-	roll->var("d")->set(DEFAULT_ROLL_D);
-}
-
 void Controller::initThrusters() {
-	for (auto v : Shm::group("thrusters")->vars()) {
-		int i = atoi(v->name().substr(1).c_str());
-		if (i < 0 || i >= NUM_THRUSTERS) {
-			// Extraneous thruster
-			continue;
-		}
-
-		m_thrusters[i].shm = v;
+	auto thrustersArray = shm().thrusters.array("t");
+	for (int i = 0; i < NUM_THRUSTERS; i++) {
+		m_thrusters[i].shm = thrustersArray[i]->ptr<float>();
 	}
 
 	float totalPitchTorque = 0, totalRollTorque = 0;
@@ -61,8 +40,9 @@ void Controller::initThrusters() {
 		// Pitch and roll (by torque)
 		float angle = radians(360.0 / NUM_THRUSTERS * i);
 		float pitchPortion = sin(angle), rollPortion = -cos(angle);
-		float pitchTorque = pitchPortion * COPTER_RADIUS * FORCE_PER_THRUST;
-		float rollTorque = rollPortion * COPTER_RADIUS * FORCE_PER_THRUST;
+		float scale = COPTER_RADIUS * FORCE_PER_THRUST;
+		float pitchTorque = pitchPortion * scale;
+		float rollTorque = rollPortion * scale;
 
 		t.pitch.valuePerThrust = pitchTorque;
 		t.roll.valuePerThrust = rollTorque;
@@ -98,7 +78,7 @@ void Controller::checkTorqueIndependence() {
 	if (!fequals(deltaForce, 0)
 			|| !fequals(momentumByPitch, 0)
 			|| !fequals(momentumByRoll, 0)
-			|| !fequals(rollTorqueByPitch, 0) 
+			|| !fequals(rollTorqueByPitch, 0)
 			|| !fequals(pitchTorqueByRoll, 0)) {
 		Log::info("force\tpitch momentum\troll momentum\tpitch\troll");
 		Serial.print(deltaForce); Serial.print('\t');
@@ -111,8 +91,7 @@ void Controller::checkTorqueIndependence() {
 }
 
 void Controller::operator()() {
-	static auto enabled = Shm::var("controller.enabled");
-	if (enabled->getBool()) {
+	if (shm().controller.enabled) {
 		if (!m_enabledBefore) {
 			m_yawControl.reset();
 			m_pitchControl.reset();
@@ -123,8 +102,7 @@ void Controller::operator()() {
 
 	} else {
 		if (m_enabledBefore) {
-			static auto thrusters = Shm::group("thrusters");
-			for (auto v : thrusters->vars()) {
+			for (auto v : shm().thrusters.vars()) {
 				v->set(0);
 			}
 
@@ -134,43 +112,35 @@ void Controller::operator()() {
 		return;
 	}
 
-	for (int i = 0; i < NUM_THRUSTERS; i++) {
-		auto& t = m_thrusters[i];
-
-		static auto force = Shm::var("desires.force");
-		t.shm->set(t.force.thrustPerTotalValue * force->getFloat() 
+	for (auto& t : m_thrusters) {
+		*t.shm = t.force.thrustPerTotalValue * shm().desires.force
 			+ t.yaw.thrustPerTotalValue * m_yawControl.offset()
 			+ t.pitch.thrustPerTotalValue * m_pitchControl.offset()
-			+ t.roll.thrustPerTotalValue * m_rollControl.offset());
+			+ t.roll.thrustPerTotalValue * m_rollControl.offset();
 	}
 }
 
 Controller::AxisControl::AxisControl(std::string name):
 	m_pid{angleDiff}
 {
-	auto settings = Shm::group(name + "Settings");
-	m_enabled = settings->var("enabled");
-	m_p = settings->var("p");
-	m_i = settings->var("i");
-	m_d = settings->var("d");
-	m_current = Shm::group("placement")->var(name);
-	m_desire = Shm::group("desires")->var(name);
-	m_out = Shm::group("controllerOut")->var(name);
+	auto settings = shm().group(name + "Conf");
+	m_enabled = settings->var("enabled")->ptr<bool>();
+	m_p = settings->var("p")->ptr<float>();
+	m_p = settings->var("i")->ptr<float>();
+	m_p = settings->var("d")->ptr<float>();
+	m_current = shm().placement.var(name)->ptr<float>();
+	m_desire = shm().desires.var(name)->ptr<float>();
+	m_out = shm().controllerOut.var(name)->ptr<float>();
 }
 
 float Controller::AxisControl::offset() {
-	float out;
-	if (m_enabled->getBool()) {
-		out = m_pid(
-				m_current->getFloat(),
-				m_desire->getFloat(),
-				m_p->getFloat(),
-				m_i->getFloat(),
-				m_d->getFloat());
-	} else out = 0;
+	if (*m_enabled) {
+		*m_out = m_pid(*m_current, *m_desire, *m_p, *m_i, *m_d);
+	} else {
+		*m_out = 0;
+	}
 
-	m_out->set(out);
-	return out;
+	return *m_out;
 }
 
 void Controller::AxisControl::reset() {

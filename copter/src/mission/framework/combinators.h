@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "task.h"
 
 using namespace mission;

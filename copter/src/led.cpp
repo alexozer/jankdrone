@@ -3,29 +3,105 @@
 #include "config.h"
 #include "led.h"
 
+using namespace Config::Led;
+
+void Led::showShm() {
+	FastLED.setBrightness(shm().led.brightness);
+
+	switch (shm().led.pattern) {
+		case DYNAMIC:
+			dynamic();
+			break;
+		case CALIBRATION:
+			get().m_calibrationThread();
+			break;
+		case FLYING:
+			get().m_flyingThread();
+			break;
+		case LOW_BATT:
+			get().m_lowBattThread();
+			break;
+		case CRIT_BATT:
+			get().m_critBattThread();
+			break;
+		default:
+			get().m_offThread();
+			break;
+	}
+}
+
 void Led::off() {
 	fill_solid(get().m_leds, NUM_LEDS, CRGB::Black);
 	FastLED.show();
 }
 
-void Led::show() {
-	// TODO show reflection of copter state
-	off();
+void Led::dynamic() {
+	if (shm().power.critical) {
+		get().m_critBattThread();
+	} else if (shm().power.low) {
+		get().m_lowBattThread();
+	} else if (!shm().switches.softKill && shm().controller.enabled) {
+		get().m_flyingThread();
+	} else {
+		get().m_offThread();
+	}
 }
 
 void Led::calibration() {
-	for (int row = 0; row < LED_ROWS; row++) {
-		for (int col = 0; col < LEDS_PER_ROW; col++) {
+	for (int row = 0; row < ROWS; row++) {
+		for (int col = 0; col < COLS; col++) {
 			auto color = col >= 7 ? CRGB::Green : CRGB::Black;
-			get().m_leds[row * LEDS_PER_ROW + col] = color;
+			get().m_leds[row * COLS + col] = color;
 		}
 	}
 
 	FastLED.show();
 }
 
-Led::Led() {
-	FastLED.addLeds<NEOPIXEL, LEDS_PIN>(m_leds, NUM_LEDS);
+void Led::flying() {
+	for (int i = 0; i < NUM_LEDS; i++) {
+		int huelerp = i * 255 / NUM_LEDS;
+		int hue = (shm().led.maxHue - shm().led.minHue)
+			* quadwave8(huelerp) / 255 + shm().led.minHue;
+		get().m_leds[i] = CHSV(hue, 255, 255);
+	}
+
+	FastLED.show();
+}
+
+void Led::lowBatt() {
+	constexpr int MOD = 3;
+
+	get().m_step = (get().m_step + 1) % MOD;
+
+	for (int row = 0; row < ROWS; row++) {
+		auto color = row % MOD == get().m_step ? CRGB::Orange : CRGB::Black;
+		fill_solid(&get().m_leds[row * COLS], COLS, color);
+	}
+
+	FastLED.show();
+}
+
+void Led::critBatt() {
+	constexpr int MOD = 2;
+	get().m_step = (get().m_step + 1) % MOD;
+
+	auto color = get().m_step ? CRGB::Red : CRGB::Black;
+	fill_solid(get().m_leds, NUM_LEDS, color);
+
+	FastLED.show();
+}
+
+Led::Led():
+	m_offThread{[&] { off(); }, Thread::SECOND / 10},
+	m_calibrationThread{[&] { calibration(); }, Thread::SECOND / 10},
+	m_flyingThread{[&] { flying(); }, Thread::SECOND / 30},
+	m_lowBattThread{[&] { lowBatt(); }, Thread::SECOND / 8},
+	m_critBattThread{[&] { critBatt(); }, Thread::SECOND / 8},
+	m_step{0}
+{
+	FastLED.addLeds<NEOPIXEL, PIN>(m_leds, NUM_LEDS);
+	FastLED.setMaxPowerInVoltsAndMilliamps(VOLTAGE, CURRENT_MA);
 }
 
 Led& Led::get() {

@@ -38,12 +38,14 @@
 #include "shm.h"
 #include "thread.h"
 #include "log.h"
-#include "config.h"
 #include "led.h"
 #include "maths.h"
+#include "config.h"
 #include "mpu9250.h"
 
 namespace MPU9250 {
+
+using namespace Config::Imu;
 
 //#define DEBUG
 
@@ -253,7 +255,7 @@ uint8_t Mmode = 0x06;        // 2 for 8 Hz, 6 for 100 Hz continuous magnetometer
 float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
   
 // Pin definitions
-int intPin = 8;  
+int intPin = INT_PIN;
 volatile bool newData = false;
 bool newMagData = false;
 
@@ -818,7 +820,7 @@ void magcalMPU9250(float * dest1, float * dest2)
   int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
   int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
 
-  if (!EEPROM.read(CALIBRATED_IMU_ADDRESS)) {
+  if (!EEPROM.read(CALIBRATED_ADDRESS)) {
 	  Led::calibration();
 	  Serial.println("Mag Calibration: Wave device in a figure eight until done!");
 	  delay(4000);
@@ -839,16 +841,16 @@ void magcalMPU9250(float * dest1, float * dest2)
 		//    Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
 		//    Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
 		//    Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-	  EEPROM.put(IMU_CALIBRATION_ADDRESS, mag_max);
-	  EEPROM.put(IMU_CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
-	  EEPROM.update(CALIBRATED_IMU_ADDRESS, true);
+	  EEPROM.put(CALIBRATION_ADDRESS, mag_max);
+	  EEPROM.put(CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
+	  EEPROM.update(CALIBRATED_ADDRESS, true);
   
 	  Serial.println("Mag Calibration done!");
 	  Led::off();
   }
 
-  EEPROM.get(IMU_CALIBRATION_ADDRESS, mag_max);
-  EEPROM.get(IMU_CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
+	EEPROM.get(CALIBRATION_ADDRESS, mag_max);
+ 	EEPROM.get(CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
 
 		// Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
@@ -1190,18 +1192,15 @@ void updatePlacement() {
     lin_ay = ay + a32;
     lin_az = az - a33;
 
-	if (IMU_UPSIDE_DOWN) {
+	if (UPSIDE_DOWN) {
 		roll = pfmod(roll + 180, 360);
 		pitch = pfmod(-pitch, 360);
 		yaw = pfmod(-yaw, 360);
 	}
 
-	static auto yawVar = Shm::var("placement.yaw"),
-				pitchVar = Shm::var("placement.pitch"),
-				rollVar = Shm::var("placement.roll");
-	yawVar->set(yaw);
-	pitchVar->set(pitch);
-	rollVar->set(roll);
+	shm().placement.yaw = yaw;
+	shm().placement.pitch = pitch;
+	shm().placement.roll = roll;
 }
 Thread updatePlacementThread(&updatePlacement, Thread::SECOND / 1000);
 
@@ -1320,9 +1319,8 @@ void setup()
 
 void loop()
 {  
-  static auto calibrate = Shm::var("switches.calibrateImu");
-  if (calibrate->getBool()) {
-	  EEPROM.put(CALIBRATED_IMU_ADDRESS, false);
+  if (shm().switches.calibrateImu) {
+	  EEPROM.put(CALIBRATED_ADDRESS, false);
 	  Log::fatal("Shutting down to calibrate IMU");
   }
   // If intPin goes high, all data registers have new data
@@ -1400,8 +1398,7 @@ void loop()
     tempCount = readTempData();  // Read the gyro adc values
     temperature = ((float) tempCount) / 333.87 + 21.0; // Gyro chip temperature in degrees Centigrade
    // Print temperature in degrees Centigrade      
-   static auto tempVar = Shm::var("temperature.gyro");
-   tempVar->set(temperature);
+   shm().temperature.gyro = temperature;
 
 #ifdef DEBUG
     Serial.print("Gyro temperature is ");  Serial.print(temperature, 1);  Serial.println(" degrees C"); // Print T values to tenths of s degree C
@@ -1456,9 +1453,7 @@ void loop()
     float altimeter_setting_pressure_mb = part1 * part6; // Output is now in adjusted millibars
     baroin = altimeter_setting_pressure_mb * 0.02953;
 
-    float altitude = 145366.45*(1. - pow((Pressure/1013.25), 0.190284));
-	static auto altitudeVar = Shm::var("placement.altitude");
-	altitudeVar->set(altitude);
+	shm().placement.altitude = 145366.45*(1. - pow((Pressure/1013.25), 0.190284));
    
 #ifdef DEBUG
     Serial.print("Digital temperature value = "); Serial.print( (float)Temperature, 2); Serial.println(" C"); // temperature in degrees Celsius

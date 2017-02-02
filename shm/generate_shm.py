@@ -4,8 +4,8 @@ from lib.pyratemp import pyratemp
 import shm
 
 templates = [
-    ('../copter/src/shmdef.cpp.template', '../copter/src/shmdef.cpp'),
-    ('../copter/src/shmdef.h.template', '../copter/src/shmdef.h'),
+    ('../copter/src/shm.cpp.template', '../copter/src/shm.cpp'),
+    ('../copter/src/shm.h.template', '../copter/src/shm.h'),
     ('../client/shmdef.go.template', '../client/shmdef.go'),
 ]
 

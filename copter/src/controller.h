@@ -2,8 +2,8 @@
 
 #include <functional>
 #include "maths.h"
-#include "shm.h"
 #include "config.h"
+#include "shm.h"
 
 class Controller {
 	public:
@@ -19,7 +19,7 @@ class Controller {
 
 		struct Thruster {
 			ThrusterAxis force, yaw, pitch, roll;
-			Shm::Var* shm;
+			float* shm;
 		};
 
 		class AxisControl {
@@ -29,16 +29,15 @@ class Controller {
 				void reset();
 
 			private:
-				Shm::Var *m_enabled, *m_current, *m_desire, *m_out,
-					*m_p, *m_i, *m_d;
+				bool* m_enabled;
+				float *m_current, *m_desire, *m_out, *m_p, *m_i, *m_d;
 				PID m_pid;
 		};
 
 		bool m_enabledBefore;
-		Thruster m_thrusters[NUM_THRUSTERS];
+		Thruster m_thrusters[Config::Thrust::NUM_THRUSTERS];
 		AxisControl m_yawControl, m_pitchControl, m_rollControl;
 
-		void initSettings();
 		void initThrusters();
 		void checkTorqueIndependence();
 };

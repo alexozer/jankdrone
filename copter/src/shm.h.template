@@ -1,0 +1,147 @@
+#pragma once
+
+#include <unordered_map>
+#include <vector>
+#include <string>
+
+class Shm {
+	public:
+
+		class Group;
+		<!--(for g_name in sorted(shm.keys()))-->
+		class Group_$!g_name!$;
+		<!--(end)-->
+
+		class Var {
+			friend class Group;
+			<!--(for g_name in sorted(shm.keys()))-->
+			friend class Group_$!g_name!$;
+			<!--(end)-->
+
+			public:
+				enum class Type { INT, FLOAT, BOOL, STRING };
+
+				std::string name();
+				Type type();
+				int tag();
+				std::string path();
+				Group* group();
+
+				template <typename T>
+				void set(T value) {
+					verifyType<T>();
+					*(T*)m_value = value;
+				}
+
+				template <typename T>
+				T get() {
+					verifyType<T>();
+					return *(T*)m_value;
+				}
+
+				template <typename T>
+				T* ptr() {
+					verifyType<T>();
+					return (T*)m_value;
+				}
+
+				static std::string typeString(Type type);
+
+			protected:
+				template <typename T>
+				Var(std::string name, Group* group, T* value, int tag);
+
+			private:
+				std::string m_name;
+				Group* m_group;
+				Type m_type;
+				void* m_value;
+				int m_tag;
+
+				template <typename T>
+				void verifyType();
+
+				void verifyType(Type type);
+		};
+
+		class Group {
+			public:
+				std::string name();
+				Var* var(std::string name);
+				Var* varIfExists(std::string name);
+				std::vector<Var*> vars();
+				std::vector<Var*> array(std::string prefix);
+
+			protected:
+				Group(std::string name, std::vector<Var> vars);
+
+			private:
+				std::string m_name;
+				std::unordered_map<std::string, Var> m_vars;
+		};
+
+	<!--(macro CTYPE)-->
+<!--(if isinstance(value, str))-->
+std::string#!
+<!--(elif isinstance(value, bool))-->
+bool#!
+<!--(elif isinstance(value, int))-->
+int#!
+<!--(elif isinstance(value, float))-->
+float#!
+<!--(end)-->
+	<!--(end)-->
+		<!--(for g_name, g_vars in sorted(shm.items()))-->
+		class Group_$!g_name!$ : public Group {
+			public:
+				Group_$!g_name!$();
+
+				<!--(for v_name, v_info in sorted(g_vars.items()))-->
+				$!CTYPE(value=v_info.value)!$ $!v_name!$;
+				<!--(end)-->
+		};
+		Group_$!g_name!$ $!g_name!$;
+
+		<!--(end)-->
+		Shm();
+		Shm(const Shm&) = delete;
+		Shm(Shm&&) = delete;
+		Shm& operator=(const Shm&) = delete;
+		Shm& operator=(Shm&&) = delete;
+
+		Var* var(std::string name);
+		Var* var(int tag);
+		Var* varIfExists(std::string name);
+		Var* varIfExists(int tag);
+
+		Group* group(std::string name);
+		Group* groupIfExists(std::string name);
+		std::vector<Group*> groups();
+	
+	private:
+		std::unordered_map<std::string, Group*> m_groups;
+		Var* m_tagMap[$!sum(len(shm[g_name]) for g_name in shm)!$];
+};
+
+template <>
+void Shm::Var::set(int value);
+
+template <>
+void Shm::Var::set(const char* value);
+
+template <>
+float Shm::Var::get();
+
+template <>
+void Shm::Var::verifyType<int>();
+
+template <>
+void Shm::Var::verifyType<float>();
+
+template <>
+void Shm::Var::verifyType<bool>();
+
+template <>
+void Shm::Var::verifyType<std::string>();
+
+Shm& shm();

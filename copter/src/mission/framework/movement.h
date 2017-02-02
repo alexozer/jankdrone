@@ -10,7 +10,7 @@ constexpr float TILT_DEADBAND = 1,
 class Setter : public BaseTask {
 	public:
 		Setter(V<float> target, 
-				std::function<void(float)> desireSetter, 
+				float* desire,
 				V<float> current, 
 				float deadband, 
 				bool moduloError);
@@ -18,7 +18,7 @@ class Setter : public BaseTask {
 
 	protected:
 		V<float> m_target;
-		std::function<void(float)> m_desireSetter;
+		float* m_desire;
 		V<float> m_current;
 		float m_deadband;
 		bool m_moduloError;
@@ -34,7 +34,7 @@ class AbsoluteSetter : public Setter {
 class DeltaSetter : public Setter {
 	public:
 		DeltaSetter(V<float> target, 
-				std::function<void(float)> desireSetter, 
+				float* desireSetter, 
 				V<float> current, 
 				float deadband, 
 				bool moduloError);

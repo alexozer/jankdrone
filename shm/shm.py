@@ -2,6 +2,14 @@ from collections import namedtuple
 
 Var = namedtuple('Var', ['value', 'tag'])
 
+# Shm (shared memory) is a lightweight database of primitive datatypes designed
+# for message passing between code modules, devices, and users. Shm groups have
+# a name and contain a set of shm variables, each with a name, type, and default
+# value. The type of a shm variable is the type of its default value.
+#
+# The drone uses a right-handed coordinate system with X pointing right, Y
+# pointing forward, and Z pointing up.
+
 untagged_shm = {
     'switches': {
         'softKill': True,
@@ -30,27 +38,6 @@ untagged_shm = {
         'roll': 0.0,
     },
 
-    'yawSettings': {
-        'enabled': False,
-        'p': 0.0,
-        'i': 0.0,
-        'd': 0.0,
-    },
-
-    'pitchSettings': {
-        'enabled': False,
-        'p': 0.0,
-        'i': 0.0,
-        'd': 0.0,
-    },
-
-    'rollSettings': {
-        'enabled': False,
-        'p': 0.0,
-        'i': 0.0,
-        'd': 0.0,
-    },
-
     'controller': {
         'enabled': False,
     },
@@ -76,6 +63,35 @@ untagged_shm = {
         'voltage': 0.0,
         'low': False,
         'critical': False,
+    },
+
+    'led': {
+        'pattern': 1, # 1 == dynamic pattern
+        'brightness': 8,
+        'minHue': 114,
+        'maxHue': 188,
+        'periodMs': 250,
+    },
+
+    'yawConf': {
+        'enabled': False,
+        'p': 0.001,
+        'i': 0.0,
+        'd': 0.0,
+    },
+
+    'pitchConf': {
+        'enabled': False,
+        'p': 0.01,
+        'i': 0.0,
+        'd': 0.0,
+    },
+
+    'rollConf': {
+        'enabled': False,
+        'p': 0.01,
+        'i': 0.0,
+        'd': 0.0,
     },
 }
 
