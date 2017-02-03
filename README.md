@@ -30,7 +30,7 @@ The jankest quadcopter the world has ever seen.
 	- [ ] Force-thrust function from bollard-poll
 - [x] Voltage measurement
 - [x] LED strips
-- [ ] Deadman (kill / land on disconnection, critical battery)
+- [x] Deadman (kill / land on disconnection, critical battery)
 - Autonomous
 	- [x] Mission framework
 	- [ ] Missions
