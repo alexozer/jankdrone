@@ -145,8 +145,8 @@ std::vector<Shm::Var*> Shm::Group::vars() {
 
 std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 	std::unordered_map<int, Shm::Var*> indexMap;
-	int minI = std::numeric_limits<int>::max;
-	int maxI = std::numeric_limits<int>::min;
+	int minI = std::numeric_limits<int>::max();
+	int maxI = std::numeric_limits<int>::min();
 	for (auto& vItem : m_vars) {
 		auto v = &vItem.second;
 		auto name = v->name();
@@ -160,7 +160,7 @@ std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 
 	// There's probably an elegant way to show this proves the correctness of
 	// the array
-	if (minI != 0 || maxI != indexMap.size() - 1) {
+	if (minI != 0 || (size_t)maxI != indexMap.size() - 1) {
 		Log::fatal("Invalid shm array: %s.%s[]", m_name.c_str(), prefix.c_str());
 	}
 

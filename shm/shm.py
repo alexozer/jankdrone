@@ -73,6 +73,15 @@ untagged_shm = {
         'periodMs': 250,
     },
 
+    'deadman': {
+        'enabled': True,
+        'maxTilt': 30.0,
+    },
+
+    'remote': {
+        'connected': False,
+    },
+
     'yawConf': {
         'enabled': False,
         'p': 0.001,

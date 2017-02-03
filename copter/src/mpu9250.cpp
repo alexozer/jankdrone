@@ -1192,15 +1192,28 @@ void updatePlacement() {
     lin_ay = ay + a32;
     lin_az = az - a33;
 
-	if (UPSIDE_DOWN) {
-		roll = pfmod(roll + 180, 360);
-		pitch = pfmod(-pitch, 360);
-		yaw = pfmod(-yaw, 360);
+	if (OFFSET_YAW) {
+		yaw += 180;
+	}
+	if (OFFSET_PITCH) {
+		pitch += 180;
+	}
+	if (OFFSET_ROLL) {
+		roll += 180;
+	}
+	if (NEGATE_YAW) {
+		yaw = -yaw;
+	}
+	if (NEGATE_PITCH) {
+		pitch = -pitch;
+	}
+	if (NEGATE_ROLL) {
+		roll = -roll;
 	}
 
-	shm().placement.yaw = yaw;
-	shm().placement.pitch = pitch;
-	shm().placement.roll = roll;
+	shm().placement.yaw = pfmod(yaw, 360);
+	shm().placement.pitch = pfmod(pitch, 360);
+	shm().placement.roll = pfmod(roll, 360);
 }
 Thread updatePlacementThread(&updatePlacement, Thread::SECOND / 1000);
 

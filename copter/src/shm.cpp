@@ -160,7 +160,7 @@ std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 
 	// There's probably an elegant way to show this proves the correctness of
 	// the array
-	if (minI != 0 || maxI != indexMap.size() - 1) {
+	if (minI != 0 || (size_t)maxI != indexMap.size() - 1) {
 		Log::fatal("Invalid shm array: %s.%s[]", m_name.c_str(), prefix.c_str());
 	}
 
@@ -174,11 +174,13 @@ std::vector<Shm::Var*> Shm::Group::array(std::string prefix) {
 Shm::Shm(): m_groups{
 	{"controller", &controller},
 	{"controllerOut", &controllerOut},
+	{"deadman", &deadman},
 	{"desires", &desires},
 	{"led", &led},
 	{"pitchConf", &pitchConf},
 	{"placement", &placement},
 	{"power", &power},
+	{"remote", &remote},
 	{"rollConf", &rollConf},
 	{"switches", &switches},
 	{"temperature", &temperature},
@@ -282,12 +284,22 @@ Shm::Group_controllerOut::Group_controllerOut():
 	yaw{0.0}
 {}
 	
+Shm::Group_deadman::Group_deadman():
+	Group{"deadman", {
+		{"enabled", this, &enabled, 4},
+		{"maxTilt", this, &maxTilt, 5},
+	}},
+
+	enabled{true},
+	maxTilt{30.0}
+{}
+	
 Shm::Group_desires::Group_desires():
 	Group{"desires", {
-		{"force", this, &force, 4},
-		{"pitch", this, &pitch, 5},
-		{"roll", this, &roll, 6},
-		{"yaw", this, &yaw, 7},
+		{"force", this, &force, 6},
+		{"pitch", this, &pitch, 7},
+		{"roll", this, &roll, 8},
+		{"yaw", this, &yaw, 9},
 	}},
 
 	force{0.0},
@@ -298,11 +310,11 @@ Shm::Group_desires::Group_desires():
 	
 Shm::Group_led::Group_led():
 	Group{"led", {
-		{"brightness", this, &brightness, 8},
-		{"maxHue", this, &maxHue, 9},
-		{"minHue", this, &minHue, 10},
-		{"pattern", this, &pattern, 11},
-		{"periodMs", this, &periodMs, 12},
+		{"brightness", this, &brightness, 10},
+		{"maxHue", this, &maxHue, 11},
+		{"minHue", this, &minHue, 12},
+		{"pattern", this, &pattern, 13},
+		{"periodMs", this, &periodMs, 14},
 	}},
 
 	brightness{8},
@@ -314,10 +326,10 @@ Shm::Group_led::Group_led():
 	
 Shm::Group_pitchConf::Group_pitchConf():
 	Group{"pitchConf", {
-		{"d", this, &d, 13},
-		{"enabled", this, &enabled, 14},
-		{"i", this, &i, 15},
-		{"p", this, &p, 16},
+		{"d", this, &d, 15},
+		{"enabled", this, &enabled, 16},
+		{"i", this, &i, 17},
+		{"p", this, &p, 18},
 	}},
 
 	d{0.0},
@@ -328,10 +340,10 @@ Shm::Group_pitchConf::Group_pitchConf():
 	
 Shm::Group_placement::Group_placement():
 	Group{"placement", {
-		{"altitude", this, &altitude, 17},
-		{"pitch", this, &pitch, 18},
-		{"roll", this, &roll, 19},
-		{"yaw", this, &yaw, 20},
+		{"altitude", this, &altitude, 19},
+		{"pitch", this, &pitch, 20},
+		{"roll", this, &roll, 21},
+		{"yaw", this, &yaw, 22},
 	}},
 
 	altitude{0.0},
@@ -342,9 +354,9 @@ Shm::Group_placement::Group_placement():
 	
 Shm::Group_power::Group_power():
 	Group{"power", {
-		{"critical", this, &critical, 21},
-		{"low", this, &low, 22},
-		{"voltage", this, &voltage, 23},
+		{"critical", this, &critical, 23},
+		{"low", this, &low, 24},
+		{"voltage", this, &voltage, 25},
 	}},
 
 	critical{false},
@@ -352,12 +364,20 @@ Shm::Group_power::Group_power():
 	voltage{0.0}
 {}
 	
+Shm::Group_remote::Group_remote():
+	Group{"remote", {
+		{"connected", this, &connected, 26},
+	}},
+
+	connected{false}
+{}
+	
 Shm::Group_rollConf::Group_rollConf():
 	Group{"rollConf", {
-		{"d", this, &d, 24},
-		{"enabled", this, &enabled, 25},
-		{"i", this, &i, 26},
-		{"p", this, &p, 27},
+		{"d", this, &d, 27},
+		{"enabled", this, &enabled, 28},
+		{"i", this, &i, 29},
+		{"p", this, &p, 30},
 	}},
 
 	d{0.0},
@@ -368,9 +388,9 @@ Shm::Group_rollConf::Group_rollConf():
 	
 Shm::Group_switches::Group_switches():
 	Group{"switches", {
-		{"calibrateEscs", this, &calibrateEscs, 28},
-		{"calibrateImu", this, &calibrateImu, 29},
-		{"softKill", this, &softKill, 30},
+		{"calibrateEscs", this, &calibrateEscs, 31},
+		{"calibrateImu", this, &calibrateImu, 32},
+		{"softKill", this, &softKill, 33},
 	}},
 
 	calibrateEscs{false},
@@ -380,7 +400,7 @@ Shm::Group_switches::Group_switches():
 	
 Shm::Group_temperature::Group_temperature():
 	Group{"temperature", {
-		{"gyro", this, &gyro, 31},
+		{"gyro", this, &gyro, 34},
 	}},
 
 	gyro{0.0}
@@ -388,14 +408,14 @@ Shm::Group_temperature::Group_temperature():
 	
 Shm::Group_thrusters::Group_thrusters():
 	Group{"thrusters", {
-		{"t0", this, &t0, 32},
-		{"t1", this, &t1, 33},
-		{"t2", this, &t2, 34},
-		{"t3", this, &t3, 35},
-		{"t4", this, &t4, 36},
-		{"t5", this, &t5, 37},
-		{"t6", this, &t6, 38},
-		{"t7", this, &t7, 39},
+		{"t0", this, &t0, 35},
+		{"t1", this, &t1, 36},
+		{"t2", this, &t2, 37},
+		{"t3", this, &t3, 38},
+		{"t4", this, &t4, 39},
+		{"t5", this, &t5, 40},
+		{"t6", this, &t6, 41},
+		{"t7", this, &t7, 42},
 	}},
 
 	t0{0.0},
@@ -410,10 +430,10 @@ Shm::Group_thrusters::Group_thrusters():
 	
 Shm::Group_yawConf::Group_yawConf():
 	Group{"yawConf", {
-		{"d", this, &d, 40},
-		{"enabled", this, &enabled, 41},
-		{"i", this, &i, 42},
-		{"p", this, &p, 43},
+		{"d", this, &d, 43},
+		{"enabled", this, &enabled, 44},
+		{"i", this, &i, 45},
+		{"p", this, &p, 46},
 	}},
 
 	d{0.0},

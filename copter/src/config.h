@@ -13,8 +13,12 @@
 namespace Config {
 	namespace Thrust {
 		constexpr float COPTER_RADIUS = 0.26924,
+				  THRUSTER0_ANGLE = 90,
 				  FORCE_PER_THRUST = 3;
-		constexpr int PINS[] = {3, 23, 4, 22, 6, 5},
+		constexpr bool THRUSTER0_CCW = true;
+
+		// Pins are specified counterclockwise
+		constexpr int PINS[] = {3, 23, 22, 6, 5, 4},
 				  NUM_THRUSTERS = sizeof(PINS) / sizeof(PINS[0]),
 				  MIN_PULSE = 700,
 				  MAX_PULSE = 2000,
@@ -31,6 +35,17 @@ namespace Config {
 	}
 
 	namespace Imu {
+		// Change to adjust for placement / coordinate system of imu
+	
+		// Offset by 180
+		constexpr bool OFFSET_YAW = false,
+				  OFFSET_PITCH = false,
+				  OFFSET_ROLL = true,
+
+				  NEGATE_YAW = true,
+				  NEGATE_PITCH = true,
+				  NEGATE_ROLL = true;
+
 		constexpr bool UPSIDE_DOWN = true; // Rotated halfway about X
 		constexpr int INT_PIN = 8,
 				  SDA_PIN = 17,

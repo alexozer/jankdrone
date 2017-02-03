@@ -10,11 +10,13 @@ class Shm {
 		class Group;
 		class Group_controller;
 		class Group_controllerOut;
+		class Group_deadman;
 		class Group_desires;
 		class Group_led;
 		class Group_pitchConf;
 		class Group_placement;
 		class Group_power;
+		class Group_remote;
 		class Group_rollConf;
 		class Group_switches;
 		class Group_temperature;
@@ -25,11 +27,13 @@ class Shm {
 			friend class Group;
 			friend class Group_controller;
 			friend class Group_controllerOut;
+			friend class Group_deadman;
 			friend class Group_desires;
 			friend class Group_led;
 			friend class Group_pitchConf;
 			friend class Group_placement;
 			friend class Group_power;
+			friend class Group_remote;
 			friend class Group_rollConf;
 			friend class Group_switches;
 			friend class Group_temperature;
@@ -116,6 +120,15 @@ class Shm {
 		};
 		Group_controllerOut controllerOut;
 
+		class Group_deadman : public Group {
+			public:
+				Group_deadman();
+
+				bool enabled;
+				float maxTilt;
+		};
+		Group_deadman deadman;
+
 		class Group_desires : public Group {
 			public:
 				Group_desires();
@@ -170,6 +183,14 @@ class Shm {
 				float voltage;
 		};
 		Group_power power;
+
+		class Group_remote : public Group {
+			public:
+				Group_remote();
+
+				bool connected;
+		};
+		Group_remote remote;
 
 		class Group_rollConf : public Group {
 			public:
@@ -243,7 +264,7 @@ class Shm {
 	
 	private:
 		std::unordered_map<std::string, Group*> m_groups;
-		Var* m_tagMap[44];
+		Var* m_tagMap[47];
 };
 
 template <>
