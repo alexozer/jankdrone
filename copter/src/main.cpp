@@ -19,19 +19,19 @@ struct Main {
 	Controller controller;
 	Deadman deadman;
 
-	ThreadController threadController;
+	FuncSet threads;
 
-	Main(): threadController{
-		Thread([&] { thrust(); }, Thread::SECOND / 1000),
-		Thread([&] { remote(); }, 0),
-		Thread([&] { imu(); }, 0),
-		Thread([&] { controller(); }, Thread::SECOND / 1000),
+	Main(): threads{
+		Thread([&] { thrust(); }, Thread::SECOND / 1000, &shm().threadTime.thrust),
+		Thread([&] { remote(); }, 0, &shm().threadTime.remote),
+		Thread([&] { imu(); }, 0, &shm().threadTime.imu),
+		Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
 		Thread(&Power::readVoltage, Thread::SECOND / 10),
-		Thread(&Led::showShm, Thread::SECOND / 60),
+		Thread(&Led::showShm, Thread::SECOND / 60, &shm().threadTime.led),
 		Thread([&] { deadman(); }, Thread::SECOND / 30),
 	} {}
 
-	void operator()() { while (true) threadController(); }
+	void operator()() { while (true) threads(); }
 };
 
 void setup() {

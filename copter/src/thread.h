@@ -7,21 +7,23 @@ class Thread {
 	public:
 		static constexpr int SECOND = 1e6;
 
-		Thread(std::function<void()> func, unsigned long intervalMicros);
+		Thread(std::function<void()> func, size_t intervalMicros, int* tickTime = nullptr);
 		void operator()();
 
 	private:
 		std::function<void()> m_func;
-		unsigned long m_interval;
-		unsigned long m_lastTime;
+		size_t m_interval;
+		int* m_tickTime;
+
+		size_t m_lastTime;
 		bool m_hasRun;
 };
 
-class ThreadController {
+class FuncSet {
 	public:
-		ThreadController(std::initializer_list<Thread> threads);
+		FuncSet(std::initializer_list<std::function<void()>> funcs);
 		void operator()();
 	
 	private:
-		std::vector<Thread> m_threads;
+		std::vector<std::function<void()>> m_funcs;
 };
