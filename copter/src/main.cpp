@@ -10,12 +10,14 @@
 #include "controller.h"
 #include "thrust.h"
 #include "power.h"
+#include "deadman.h"
 
 struct Main {
 	Thrust thrust;
 	Imu imu;
 	Remote remote;
 	Controller controller;
+	Deadman deadman;
 
 	ThreadController threadController;
 
@@ -26,6 +28,7 @@ struct Main {
 		Thread([&] { controller(); }, Thread::SECOND / 1000),
 		Thread(&Power::readVoltage, Thread::SECOND / 10),
 		Thread(&Led::showShm, Thread::SECOND / 60),
+		Thread([&] { deadman(); }, Thread::SECOND / 30),
 	} {}
 
 	void operator()() { while (true) threadController(); }
@@ -33,9 +36,9 @@ struct Main {
 
 void setup() {
 	Serial.begin(115200);
-	while (!Serial);
+	//while (!Serial);
 
-	//Led::off();
+	Led::off();
 	
 	static Main main;
 	main();

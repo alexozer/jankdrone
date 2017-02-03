@@ -6,8 +6,7 @@
 using namespace Config::Thrust;
 
 Controller::Controller():
-	m_enabledBefore{shm().controller.enabled},
-	m_thrusters{NUM_THRUSTERS},
+	m_enabledBefore{shm().var("controller.enabled")->get<bool>()}, 
 
 	m_yawControl{"yaw"},
 	m_pitchControl{"pitch"},
@@ -19,7 +18,7 @@ Controller::Controller():
 
 void Controller::initThrusters() {
 	auto thrustersArray = shm().thrusters.array("t");
-	for (int i = 0; i < NUM_THRUSTERS; i++) {
+	for (int i = 0; (size_t)i < thrustersArray.size(); i++) {
 		m_thrusters[i].shm = thrustersArray[i]->ptr<float>();
 	}
 
@@ -34,15 +33,14 @@ void Controller::initThrusters() {
 
 		// Yaw (by angular momentum of drone body)
 		// Assume thrusters alternate direction starting at counterclockwise
-		t.yaw.valuePerThrust = i % 2 == 0 ? -1 : 1;
+		t.yaw.valuePerThrust = i % 2 != THRUSTER0_CCW ? -1 : 1;
 		t.yaw.thrustPerTotalValue = -t.yaw.valuePerThrust / NUM_THRUSTERS;
 
 		// Pitch and roll (by torque)
-		float angle = radians(360.0 / NUM_THRUSTERS * i);
+		float angle = radians(THRUSTER0_ANGLE + 360.0 / NUM_THRUSTERS * i);
 		float pitchPortion = sin(angle), rollPortion = -cos(angle);
-		float scale = COPTER_RADIUS * FORCE_PER_THRUST;
-		float pitchTorque = pitchPortion * scale;
-		float rollTorque = rollPortion * scale;
+		float pitchTorque = pitchPortion * COPTER_RADIUS * FORCE_PER_THRUST;
+		float rollTorque = rollPortion * COPTER_RADIUS * FORCE_PER_THRUST;
 
 		t.pitch.valuePerThrust = pitchTorque;
 		t.roll.valuePerThrust = rollTorque;
@@ -69,7 +67,7 @@ void Controller::checkTorqueIndependence() {
 		float totalThrust = thrustP + thrustR;
 
 		deltaForce += totalThrust;
-		bool ccw = i % 2 == 0;
+		bool ccw = i % 2 != THRUSTER0_CCW;
 		momentumByPitch += ccw ? thrustP : -thrustP;
 		momentumByRoll += ccw ? thrustR : -thrustR;
 		rollTorqueByPitch += thrustP * m_thrusters[i].roll.valuePerThrust;
@@ -78,7 +76,7 @@ void Controller::checkTorqueIndependence() {
 	if (!fequals(deltaForce, 0)
 			|| !fequals(momentumByPitch, 0)
 			|| !fequals(momentumByRoll, 0)
-			|| !fequals(rollTorqueByPitch, 0)
+			|| !fequals(rollTorqueByPitch, 0) 
 			|| !fequals(pitchTorqueByRoll, 0)) {
 		Log::info("force\tpitch momentum\troll momentum\tpitch\troll");
 		Serial.print(deltaForce); Serial.print('\t');
@@ -126,8 +124,8 @@ Controller::AxisControl::AxisControl(std::string name):
 	auto settings = shm().group(name + "Conf");
 	m_enabled = settings->var("enabled")->ptr<bool>();
 	m_p = settings->var("p")->ptr<float>();
-	m_p = settings->var("i")->ptr<float>();
-	m_p = settings->var("d")->ptr<float>();
+	m_i = settings->var("i")->ptr<float>();
+	m_d = settings->var("d")->ptr<float>();
 	m_current = shm().placement.var(name)->ptr<float>();
 	m_desire = shm().desires.var(name)->ptr<float>();
 	m_out = shm().controllerOut.var(name)->ptr<float>();
