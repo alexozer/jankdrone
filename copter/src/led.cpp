@@ -59,11 +59,24 @@ void Led::calibration() {
 }
 
 void Led::flying() {
-	for (int i = 0; i < NUM_LEDS; i++) {
-		int huelerp = i * 255 / NUM_LEDS;
-		int hue = (shm().led.maxHue - shm().led.minHue)
-			* quadwave8(huelerp) / 255 + shm().led.minHue;
-		get().m_leds[i] = CHSV(hue, 255, 255);
+	constexpr int COLOR_PERIOD = 5000,
+			  WAVE_PERIOD = 500;
+	size_t t = millis();
+	int colorLerp = t % COLOR_PERIOD * 255 / COLOR_PERIOD;
+	int waveLerp = t % WAVE_PERIOD * 255 / WAVE_PERIOD;
+
+	for (int row = 0; row < ROWS; row++) {
+		for (int col = 0; col < COLS; col++) {
+			int hue = row % 2 == 0 ? 0 : 255 / 3;
+			hue = (hue + colorLerp) % 255;
+			
+			int vLerp = 255 * (ROWS - row - 1) / ROWS * 2;
+			vLerp += -waveLerp + col * 255 / COLS / 2;
+			vLerp %= 255;
+			int v = quadwave8(vLerp);
+
+			get().m_leds[row * COLS + col] = CHSV(hue, 255, v);
+		}
 	}
 
 	FastLED.show();

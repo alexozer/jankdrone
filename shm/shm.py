@@ -67,10 +67,7 @@ untagged_shm = {
 
     'led': {
         'pattern': 1, # 1 == dynamic pattern
-        'brightness': 8,
-        'minHue': 114,
-        'maxHue': 188,
-        'periodMs': 250,
+        'brightness': 32,
     },
 
     'deadman': {
@@ -80,6 +77,14 @@ untagged_shm = {
 
     'remote': {
         'connected': False,
+    },
+
+    'threadTime': {
+        'thrust': 0,
+        'remote': 0,
+        'imu': 0,
+        'controller': 0,
+        'led': 0,
     },
 
     'yawConf': {
