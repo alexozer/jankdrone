@@ -26,6 +26,17 @@ var cliShortcuts = map[string]BoundVar{
 	"u": MustBindVar("switches", "softKill", false),
 	"e": MustBindVar("controller", "enabled", true),
 	"d": MustBindVar("controller", "enabled", false),
+
+	"ye": MustBindVar("yawConf", "enabled", true),
+	"pe": MustBindVar("pitchConf", "enabled", true),
+	"re": MustBindVar("rollConf", "enabled", true),
+	"yd": MustBindVar("yawConf", "enabled", false),
+	"pd": MustBindVar("pitchConf", "enabled", false),
+	"rd": MustBindVar("rollConf", "enabled", false),
+
+	"yaw":   MustBindVar("placement", "yaw", nil),
+	"pitch": MustBindVar("placement", "pitch", nil),
+	"roll":  MustBindVar("placement", "roll", nil),
 }
 
 func (this *Cli) Start() {
@@ -61,6 +72,10 @@ func (this *Cli) read() {
 		}
 
 		if shortcut, ok := cliShortcuts[valueStr]; ok && len(path) == 0 {
+			if shortcut.Value == nil {
+				lastGroup = shortcut.Group
+				lastName = shortcut.Name
+			}
 			this.out <- []BoundVar{shortcut}
 			continue
 		}
