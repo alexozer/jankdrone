@@ -13,8 +13,8 @@ float PID::operator()(float value, float desire, float p, float i, float d) {
 		return 0;
 	}
 
-	float nowMicros = micros();
-	float dt = (nowMicros - m_lastTimeMicros) / 1e6f;
+	size_t nowMicros = micros();
+	float dt = (float)(nowMicros - m_lastTimeMicros) / 1e6f;
 	m_lastTimeMicros = nowMicros;
 
 	// TODO implement integral term

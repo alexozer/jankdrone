@@ -18,7 +18,7 @@ Controller::Controller():
 
 void Controller::initThrusters() {
 	auto thrustersArray = shm().thrusters.array("t");
-	for (int i = 0; (size_t)i < thrustersArray.size(); i++) {
+	for (int i = 0; i < NUM_THRUSTERS; i++) {
 		m_thrusters[i].shm = thrustersArray[i]->ptr<float>();
 	}
 
@@ -110,11 +110,14 @@ void Controller::operator()() {
 		return;
 	}
 
+	float yawOut = m_yawControl.out();
+	float pitchOut = m_pitchControl.out();
+	float rollOut = m_rollControl.out();
 	for (auto& t : m_thrusters) {
 		*t.shm = t.force.thrustPerTotalValue * shm().desires.force
-			+ t.yaw.thrustPerTotalValue * m_yawControl.offset()
-			+ t.pitch.thrustPerTotalValue * m_pitchControl.offset()
-			+ t.roll.thrustPerTotalValue * m_rollControl.offset();
+			+ t.yaw.thrustPerTotalValue * yawOut
+			+ t.pitch.thrustPerTotalValue * pitchOut
+			+ t.roll.thrustPerTotalValue * rollOut;
 	}
 }
 
@@ -131,7 +134,7 @@ Controller::AxisControl::AxisControl(std::string name):
 	m_out = shm().controllerOut.var(name)->ptr<float>();
 }
 
-float Controller::AxisControl::offset() {
+float Controller::AxisControl::out() {
 	if (*m_enabled) {
 		*m_out = m_pid(*m_current, *m_desire, *m_p, *m_i, *m_d);
 	} else {

@@ -25,7 +25,7 @@ class Controller {
 		class AxisControl {
 			public:
 				AxisControl(std::string name);
-				float offset();
+				float out();
 				void reset();
 
 			private:
