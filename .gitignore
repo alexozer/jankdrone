@@ -1,6 +1,13 @@
-*.pb.*
-*.gch
 __pycache__/
 .ropeproject/
 *.pyc
+*.pb.*
+*.gch
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+
 /jankcopter
+/{copter,handheld}/src/shm.*
+/client/shmdef.go

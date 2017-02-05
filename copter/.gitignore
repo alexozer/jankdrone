@@ -1,8 +1,0 @@
-*.pb.*
-*.gch
-/.pioenvs
-/.piolibdeps
-.pioenvs
-.piolibdeps
-.clang_complete
-.gcc-flags.json
