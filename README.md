@@ -12,16 +12,19 @@ The jankest quadcopter the world has ever seen.
 # TODO
 
 ## Software
-- [x] Shared memory
+- [x] Shared memory (SHM)
 - [x] Threading
 - [x] Logging
-- Bluetooth message passing
+- SHM message passing
 	- [x] Protocol
 	- [x] Server
-	- Client
-		- [x] Handheld controller
-		- [x] CLI
-- [x] IMU readings
+	- [x] Serial I/O
+	- [x] Bluetooth I/O (failed, signal too weak)
+	- [x] Radio I/O
+	- [x] Client terminal status GUI
+	- [X] Client command REPL
+	- [x] Handheld serial to radio map
+	- [x] Handheld control desire input serialization
 - Controller
 	- [x] Hexcopter / 2n-copter support
 - Thrust writer
@@ -39,27 +42,40 @@ The jankest quadcopter the world has ever seen.
 - Main board
 	- [x] Teensy mount
 	- [x] MPU9250 mount
-	- [x] Bluefruit mount
+	- [x] Bluefruit mount (useless now, bluetooth too weak)
 	- [x] ESC plugs
 	- [x] Voltage monitor wire
 	- [x] LED strips
+	- [ ] RFM69 Radio transceiver
 - Power board
 	- [x] 12V power rail
 	- [x] Voltage measurement source
 	- [x] 5V-regulated power for computer board
+- Handheld controller
+	- [x] Joysticks
+	- [x] Softkill switch
+	- [ ] Radio tranceiver
 
 ## Mechanical
+
+### Drone
 - Version 1 (failed, too heavy)
 	- [x] PVC frame
-	- [x] 4 PVC tube thruster mounts
+	- [x] 4 PVC tube thrusters and mounts
 	- [x] Metal sheet electronics mount
 - Version 2 (failed, too heavy, thrust blockage)
 	- [x] Metal sheet only frame
-	- [x] 4 Thrusters
+	- [x] 4 thrusters and mounts
 	- [x] Landing posts
 - Version 3
 	- [x] Carbon fiber frame
-	- [x] 6 thruster mounts
+	- [x] 6 thrusters and mounts
 	- [x] LED strips
 	- [x] Tetrahedral-ish electronics shell
 	- [x] DJI Phantom-style props that don't vibrate like crazy
+
+### Handheld
+- [x] Gutted Xbox controller, replaced with old Arduino Nano
+- [x] Joysticks
+- [x] Softkill toggle switch
+- [ ] Radio tranceiver
