@@ -17,7 +17,7 @@ func (this BoundVar) String() string {
 func (this BoundVar) ValueString() string {
 	switch value := this.Value.(type) {
 	case float64:
-		return fmt.Sprintf("%.2f", value)
+		return fmt.Sprintf("%.3f", value)
 	default:
 		return fmt.Sprintf("%v", value)
 	}
