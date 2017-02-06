@@ -8,7 +8,7 @@
 #include <SPI.h>
 #include "radio/radio_stream.h"
 
-constexpr int SOFT_KILL = 12,
+constexpr int SOFT_KILL_PIN = 12,
 		  LEFT_X_PIN = A0, LEFT_Y_PIN = A1,
 		  RIGHT_X_PIN = A3, RIGHT_Y_PIN = A2,
 		  LED_PIN = 13,
@@ -47,6 +47,7 @@ RadioStream radioStream(
 
 uint8_t sendBuf[255]; // Max size that length byte can describe
 size_t lastInputSend = millis();
+bool lastSoftKill = false;
 
 float inputLerp(int pin) {
 	return (float)(analogRead(pin) - MAX_INPUT) / (MAX_INPUT / 2);
@@ -79,11 +80,15 @@ void inputsToRadio() {
 	if (t - lastInputSend < INPUT_SEND_PERIOD) return;
 	lastInputSend = t;
 
-	ShmMsg softKillMsg;
-	softKillMsg.tag = SHM_SWITCHES_SOFTKILL_TAG;
-	softKillMsg.which_value = ShmMsg_boolValue_tag;
-	softKillMsg.value.boolValue = digitalRead(SOFT_KILL);
-	writeRadioVar(softKillMsg);
+	bool softKill = digitalRead(SOFT_KILL_PIN);
+	if (softKill != lastSoftKill) {
+		ShmMsg softKillMsg;
+		softKillMsg.tag = SHM_SWITCHES_SOFTKILL_TAG;
+		softKillMsg.which_value = ShmMsg_boolValue_tag;
+		softKillMsg.value.boolValue = softKill;
+		writeRadioVar(softKillMsg);
+		lastSoftKill = softKill;
+	}
 
 	float force = inputLerp(LEFT_Y_PIN);
 	float yaw = inputLerp(LEFT_X_PIN) * 180;
@@ -107,7 +112,7 @@ void mapStream(Stream* s1, Stream* s2) {
 
 void setup() {
 	Serial.begin(38400);
-	pinMode(SOFT_KILL, INPUT_PULLUP);
+	pinMode(SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(LED_PIN, OUTPUT);
 }
 
@@ -115,4 +120,5 @@ void loop() {
 	inputsToRadio();
 	mapStream(&radioStream, &Serial);
 	mapStream(&Serial, &radioStream);
+	digitalWrite(LED_PIN, !digitalRead(SOFT_KILL_PIN));
 }
