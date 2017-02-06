@@ -1,0 +1,7 @@
+#pragma once
+
+<!--(for g_name, g_vars in sorted(shm.items()))-->
+	<!--(for v_name, v_info in sorted(g_vars.items()))-->
+constexpr int SHM_$!g_name.upper()!$_$!v_name.upper()!$_TAG = $!v_info.tag!$;
+	<!--(end)-->
+<!--(end)-->
