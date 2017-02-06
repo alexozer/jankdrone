@@ -13,22 +13,22 @@
 #include "deadman.h"
 
 struct Main {
-	Thrust thrust;
-	Imu imu;
+	//Thrust thrust;
+	//Imu imu;
 	Remote remote;
-	Controller controller;
-	Deadman deadman;
+	//Controller controller;
+	//Deadman deadman;
 
 	FuncSet threads;
 
 	Main(): threads{
-		Thread([&] { thrust(); }, Thread::SECOND / 1000, &shm().threadTime.thrust),
+		//Thread([&] { thrust(); }, Thread::SECOND / 1000, &shm().threadTime.thrust),
 		Thread([&] { remote(); }, 0, &shm().threadTime.remote),
-		Thread([&] { imu(); }, 0, &shm().threadTime.imu),
-		Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
-		Thread(&Power::readVoltage, Thread::SECOND / 10),
-		Thread(&Led::showShm, Thread::SECOND / 60, &shm().threadTime.led),
-		Thread([&] { deadman(); }, Thread::SECOND / 30),
+		//Thread([&] { imu(); }, 0, &shm().threadTime.imu),
+		//Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
+		//Thread(&Power::readVoltage, Thread::SECOND / 10),
+		//Thread(&Led::showShm, Thread::SECOND / 60, &shm().threadTime.led),
+		//Thread([&] { deadman(); }, Thread::SECOND / 30),
 	} {}
 
 	void operator()() { while (true) threads(); }

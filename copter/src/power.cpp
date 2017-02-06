@@ -3,8 +3,6 @@
 #include "config.h"
 #include "power.h"
 
-using namespace Config::Power;
-
 void Power::readVoltage() {
 	float reading = analogRead(VOLTAGE_PIN);
 	float voltage = reading * 3.3 * VOLTAGE_FACTOR / 1023;

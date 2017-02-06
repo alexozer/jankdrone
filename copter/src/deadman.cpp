@@ -20,7 +20,7 @@ void Deadman::operator()() {
 
 	float pitchTilt = fabs(angleDiff(shm().placement.pitch, 0));
 	float rollTilt = fabs(angleDiff(shm().placement.roll, 0));
-	if (std::max(pitchTilt, rollTilt) > shm().deadman.maxTilt) {
+	if (fmax(pitchTilt, rollTilt) > shm().deadman.maxTilt) {
 		kill("extreme tilt");
 		return;
 	}

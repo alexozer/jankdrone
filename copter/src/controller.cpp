@@ -3,8 +3,6 @@
 #include "log.h"
 #include "controller.h"
 
-using namespace Config::Thrust;
-
 Controller::Controller():
 	m_enabledBefore{shm().var("controller.enabled")->get<bool>()}, 
 

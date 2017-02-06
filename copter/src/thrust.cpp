@@ -6,8 +6,6 @@
 #include "log.h"
 #include "thrust.h"
 
-using namespace Config::Thrust;
-
 Thrust::Thruster::Thruster() {}
 
 Thrust::Thruster::Thruster(int pin, float* thrustValue): m_thrustValue{thrustValue} {
@@ -21,7 +19,7 @@ void Thrust::Thruster::operator()() {
 
 void Thrust::Thruster::operator()(float thrustValue) {
 	if (shm().switches.calibrateEscs) {
-		EEPROM.update(CALIBRATED_ADDRESS, false);
+		EEPROM.update(ESCS_CALIBRATED_ADDRESS, false);
 		Log::fatal("Shutting down to calibrate");
 	}
 
@@ -33,9 +31,9 @@ void Thrust::Thruster::operator()(float thrustValue) {
 }
 
 void Thrust::Thruster::thrustNoKillCheck(float thrustValue) {
-	float clampedThrust = std::max(0.0, std::min(1.0, thrustValue));
-	float dutyCycleMicros = MIN_PULSE + 
-		(MAX_PULSE - MIN_PULSE) * clampedThrust;
+	float clampedThrust = fmax(0.0, fmin(1.0, thrustValue));
+	float dutyCycleMicros = MIN_ESC_PULSE + 
+		(MAX_ESC_PULSE - MIN_ESC_PULSE) * clampedThrust;
 	int roundedMicros = (int)round(dutyCycleMicros);
 	m_esc.writeMicroseconds(roundedMicros);
 }
@@ -43,11 +41,11 @@ void Thrust::Thruster::thrustNoKillCheck(float thrustValue) {
 Thrust::Thrust() {
 	auto thrustersArray = shm().thrusters.array("t");
 	for (int i = 0; i < NUM_THRUSTERS; i++) {
-		m_thrusters[i] = {PINS[i], thrustersArray[i]->ptr<float>()};
+		m_thrusters[i] = {THRUSTER_PINS[i], thrustersArray[i]->ptr<float>()};
 	}
 
-	if (!EEPROM.read(CALIBRATED_ADDRESS)) {
-		EEPROM.update(CALIBRATED_ADDRESS, true); // Write early in case we're interrupted
+	if (!EEPROM.read(ESCS_CALIBRATED_ADDRESS)) {
+		EEPROM.update(ESCS_CALIBRATED_ADDRESS, true); // Write early in case we're interrupted
 
 		bool lastSoftKill = shm().switches.softKill;
 		shm().switches.softKill = false;

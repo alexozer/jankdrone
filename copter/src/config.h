@@ -1,73 +1,68 @@
 #pragma once
 
 #include <cstdint>
+#include <RFM69.h>
 
-/* Constants which describe the physical state of the drone.
- * Although it may be more consistent to define these as default values in shm,
- * compile-time optimizations may be performed if we define them here.
+/* Constants which describe fixed properties of the drone. Although it may be
+ * more consistent and convenient to define these as default values in shm,
+ * compile-time optimizations may be performed if we define them here, and
+ * sometimes a constexpr value is mandatory (like in a template parameter).
  *
- * The drone uses a right-handed coordinate system with X pointing right,
- * Y pointing forward, and Z pointing up.
+ * The drone uses a right-handed coordinate system with X pointing right, Y
+ * pointing forward, and Z pointing up.
  */
 
-namespace Config {
-	namespace Thrust {
-		constexpr float COPTER_RADIUS = 0.26924,
-				  THRUSTER0_ANGLE = 90,
-				  FORCE_PER_THRUST = 3;
-		constexpr bool THRUSTER0_CCW = true;
+constexpr float COPTER_RADIUS = 0.26924,
+		  THRUSTER0_ANGLE = 90,
+		  FORCE_PER_THRUST = 3;
+constexpr bool THRUSTER0_CCW = true;
 
-		// Pins are specified counterclockwise
-		constexpr int PINS[] = {3, 23, 22, 6, 5, 4},
-				  NUM_THRUSTERS = sizeof(PINS) / sizeof(PINS[0]),
-				  MIN_PULSE = 700,
-				  MAX_PULSE = 2000,
-				  CALIBRATED_ADDRESS = 0;
-	}
+// Pins are specified counterclockwise
+constexpr int THRUSTER_PINS[] = {3, 23, 22, 6, 5, 4},
+		  NUM_THRUSTERS = sizeof(THRUSTER_PINS) / sizeof(THRUSTER_PINS[0]),
+		  MIN_ESC_PULSE = 700,
+		  MAX_ESC_PULSE = 2000,
+		  ESCS_CALIBRATED_ADDRESS = 0;
 
-	namespace Ble {
-		constexpr int REQ_PIN = 10,
-				  RDY_PIN = 2,
-				  RST_PIN = 9,
-				  SCK_PIN = 13,
-				  MISO_PIN = 12,
-				  MOSI_PIN = 11;
-	}
+constexpr int RADIO_NETWORK_ID = 100,
+		  RADIO_NODE_ID = 2,
+		  RADIO_RECEIVER_ID = 1,
 
-	namespace Imu {
-		// Change to adjust for placement / coordinate system of imu
-	
-		// Offset by 180
-		constexpr bool OFFSET_YAW = false,
-				  OFFSET_PITCH = false,
-				  OFFSET_ROLL = true,
+		  // Set based on your RF69 module
+		  RADIO_FREQUENCY = RF69_915MHZ; 
+constexpr bool HAVE_RFM69HCW = false;
 
-				  NEGATE_YAW = true,
-				  NEGATE_PITCH = true,
-				  NEGATE_ROLL = true;
+constexpr int RADIO_CS_PIN = 10,
+		  RADIO_IRQ_PIN = 2,
+		  RADIO_IRQN = 0,
+		  RADIO_RST_PIN = 9,
+		  RADIO_POWER = 31; // [0, 31]
 
-		constexpr bool UPSIDE_DOWN = true; // Rotated halfway about X
-		constexpr int INT_PIN = 8,
-				  SDA_PIN = 17,
-				  SCL_PIN = 16,
-				  CALIBRATED_ADDRESS = 1,
-				  CALIBRATION_ADDRESS = 2;
-	}
+// Change to adjust for placement / coordinate system of IMU
+// Offset means add 180 degrees
+constexpr bool OFFSET_YAW = false,
+		  OFFSET_PITCH = false,
+		  OFFSET_ROLL = true,
 
-	namespace Power {
-		constexpr int VOLTAGE_PIN = 14,
-				  BATTERY_CELLS = 3;
-		constexpr float VOLTAGE_FACTOR = 4.01356;
-		constexpr float LOW_VOLTAGE = 3.6 * BATTERY_CELLS,
-				  CRITICAL_VOLTAGE = 3.4 * BATTERY_CELLS;
-	}
+		  NEGATE_YAW = true,
+		  NEGATE_PITCH = true,
+		  NEGATE_ROLL = true;
 
-	namespace Led {
-		constexpr int PIN = 21,
-				  ROWS = 6,
-				  COLS = 10,
-				  NUM_LEDS = ROWS * COLS;
-		constexpr float VOLTAGE = 5,
-				  CURRENT_MA = 250;
-	}
-}
+constexpr int IMU_INT_PIN = 8,
+		  IMU_SDA_PIN = 17,
+		  IMU_SCL_PIN = 16,
+		  IMU_CALIBRATED_ADDRESS = 1,
+		  IMU_CALIBRATION_ADDRESS = 2;
+
+constexpr int VOLTAGE_PIN = 14,
+		  BATTERY_CELLS = 3;
+constexpr float VOLTAGE_FACTOR = 4.01356;
+constexpr float LOW_VOLTAGE = 3.6 * BATTERY_CELLS,
+		  CRITICAL_VOLTAGE = 3.4 * BATTERY_CELLS;
+
+constexpr int LED_PIN = 21,
+		  LED_ROWS = 6,
+		  LED_COLS = 10,
+		  NUM_LEDS = LED_ROWS * LED_COLS;
+constexpr float LED_VOLTAGE = 5,
+		  LED_CURRENT_MA = 250;

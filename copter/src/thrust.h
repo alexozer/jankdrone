@@ -24,5 +24,5 @@ class Thrust {
 				void thrustNoKillCheck(float thrustValue);
 		};
 
-		Thruster m_thrusters[Config::Thrust::NUM_THRUSTERS];
+		Thruster m_thrusters[NUM_THRUSTERS];
 };

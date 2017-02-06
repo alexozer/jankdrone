@@ -6,6 +6,7 @@ import shm
 templates = [
     ('../copter/src/shm.cpp.template', '../copter/src/shm.cpp'),
     ('../copter/src/shm.h.template', '../copter/src/shm.h'),
+    ('../handheld/src/shm.h.template', '../handheld/src/shm.h'),
     ('../client/shmdef.go.template', '../client/shmdef.go'),
 ]
 

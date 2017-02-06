@@ -45,8 +45,6 @@
 
 namespace MPU9250 {
 
-using namespace Config::Imu;
-
 //#define DEBUG
 
 // See MS5637-02BA03 Low Voltage Barometric Pressure Sensor Data Sheet
@@ -255,7 +253,7 @@ uint8_t Mmode = 0x06;        // 2 for 8 Hz, 6 for 100 Hz continuous magnetometer
 float aRes, gRes, mRes;      // scale resolutions per LSB for the sensors
   
 // Pin definitions
-int intPin = INT_PIN;
+int intPin = IMU_INT_PIN;
 volatile bool newData = false;
 bool newMagData = false;
 
@@ -820,7 +818,7 @@ void magcalMPU9250(float * dest1, float * dest2)
   int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
   int16_t mag_max[3] = {-32767, -32767, -32767}, mag_min[3] = {32767, 32767, 32767}, mag_temp[3] = {0, 0, 0};
 
-  if (!EEPROM.read(CALIBRATED_ADDRESS)) {
+  if (!EEPROM.read(IMU_CALIBRATED_ADDRESS)) {
 	  Led::calibration();
 	  Serial.println("Mag Calibration: Wave device in a figure eight until done!");
 	  delay(4000);
@@ -841,16 +839,16 @@ void magcalMPU9250(float * dest1, float * dest2)
 		//    Serial.println("mag x min/max:"); Serial.println(mag_max[0]); Serial.println(mag_min[0]);
 		//    Serial.println("mag y min/max:"); Serial.println(mag_max[1]); Serial.println(mag_min[1]);
 		//    Serial.println("mag z min/max:"); Serial.println(mag_max[2]); Serial.println(mag_min[2]);
-	  EEPROM.put(CALIBRATION_ADDRESS, mag_max);
-	  EEPROM.put(CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
-	  EEPROM.update(CALIBRATED_ADDRESS, true);
+	  EEPROM.put(IMU_CALIBRATION_ADDRESS, mag_max);
+	  EEPROM.put(IMU_CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
+	  EEPROM.update(IMU_CALIBRATED_ADDRESS, true);
   
 	  Serial.println("Mag Calibration done!");
 	  Led::off();
   }
 
-	EEPROM.get(CALIBRATION_ADDRESS, mag_max);
- 	EEPROM.get(CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
+	EEPROM.get(IMU_CALIBRATION_ADDRESS, mag_max);
+ 	EEPROM.get(IMU_CALIBRATION_ADDRESS + sizeof(mag_max), mag_min);
 
 		// Get hard iron correction
     mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
@@ -1333,7 +1331,7 @@ void setup()
 void loop()
 {  
   if (shm().switches.calibrateImu) {
-	  EEPROM.put(CALIBRATED_ADDRESS, false);
+	  EEPROM.put(IMU_CALIBRATED_ADDRESS, false);
 	  Log::fatal("Shutting down to calibrate IMU");
   }
   // If intPin goes high, all data registers have new data

@@ -36,7 +36,7 @@ class Controller {
 		};
 
 		bool m_enabledBefore;
-		Thruster m_thrusters[Config::Thrust::NUM_THRUSTERS];
+		Thruster m_thrusters[NUM_THRUSTERS];
 		AxisControl m_yawControl, m_pitchControl, m_rollControl;
 
 		void initSettings();

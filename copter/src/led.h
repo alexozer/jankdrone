@@ -28,7 +28,7 @@ class Led {
 			LOW_BATT,
 			CRIT_BATT,
 		};
-		CRGB m_leds[Config::Led::NUM_LEDS];
+		CRGB m_leds[NUM_LEDS];
 
 		Thread m_offThread;
 		Thread m_calibrationThread;

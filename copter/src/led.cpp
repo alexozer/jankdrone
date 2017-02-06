@@ -3,8 +3,6 @@
 #include "config.h"
 #include "led.h"
 
-using namespace Config::Led;
-
 void Led::showShm() {
 	FastLED.setBrightness(shm().led.brightness);
 
@@ -48,10 +46,10 @@ void Led::dynamic() {
 }
 
 void Led::calibration() {
-	for (int row = 0; row < ROWS; row++) {
-		for (int col = 0; col < COLS; col++) {
+	for (int row = 0; row < LED_ROWS; row++) {
+		for (int col = 0; col < LED_COLS; col++) {
 			auto color = col >= 7 ? CRGB::Green : CRGB::Black;
-			get().m_leds[row * COLS + col] = color;
+			get().m_leds[row * LED_COLS + col] = color;
 		}
 	}
 
@@ -65,17 +63,17 @@ void Led::flying() {
 	int colorLerp = t % COLOR_PERIOD * 255 / COLOR_PERIOD;
 	int waveLerp = t % WAVE_PERIOD * 255 / WAVE_PERIOD;
 
-	for (int row = 0; row < ROWS; row++) {
-		for (int col = 0; col < COLS; col++) {
+	for (int row = 0; row < LED_ROWS; row++) {
+		for (int col = 0; col < LED_COLS; col++) {
 			int hue = row % 2 == 0 ? 0 : 255 / 3;
 			hue = (hue + colorLerp) % 255;
 			
-			int vLerp = 255 * (ROWS - row - 1) / ROWS * 2;
-			vLerp += -waveLerp + col * 255 / COLS / 2;
+			int vLerp = 255 * (LED_ROWS - row - 1) / LED_ROWS * 2;
+			vLerp += -waveLerp + col * 255 / LED_COLS / 2;
 			vLerp %= 255;
 			int v = quadwave8(vLerp);
 
-			get().m_leds[row * COLS + col] = CHSV(hue, 255, v);
+			get().m_leds[row * LED_COLS + col] = CHSV(hue, 255, v);
 		}
 	}
 
@@ -87,9 +85,9 @@ void Led::lowBatt() {
 
 	get().m_step = (get().m_step + 1) % MOD;
 
-	for (int row = 0; row < ROWS; row++) {
+	for (int row = 0; row < LED_ROWS; row++) {
 		auto color = row % MOD == get().m_step ? CRGB::Orange : CRGB::Black;
-		fill_solid(&get().m_leds[row * COLS], COLS, color);
+		fill_solid(&get().m_leds[row * LED_COLS], LED_COLS, color);
 	}
 
 	FastLED.show();
@@ -113,8 +111,8 @@ Led::Led():
 	m_critBattThread{[&] { critBatt(); }, Thread::SECOND / 8},
 	m_step{0}
 {
-	FastLED.addLeds<NEOPIXEL, PIN>(m_leds, NUM_LEDS);
-	FastLED.setMaxPowerInVoltsAndMilliamps(VOLTAGE, CURRENT_MA);
+	FastLED.addLeds<NEOPIXEL, LED_PIN>(m_leds, NUM_LEDS);
+	FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTAGE, LED_CURRENT_MA);
 }
 
 Led& Led::get() {
