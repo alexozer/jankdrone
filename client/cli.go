@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	boxWidth, boxHeight = 16, 9
+	boxWidth, boxHeight = 16, 6
 	quickViewWidth      = 8
 	cmdWidth, cmdHeight = 3*(boxWidth+1) + quickViewWidth, 3
 
@@ -26,6 +26,7 @@ type Cli struct {
 	in     <-chan BoundVar
 	out    chan<- []BoundVar
 	status chan string
+	sync   chan bool
 
 	vars map[string]map[string]BoundVar
 
@@ -38,17 +39,17 @@ func NewCli(in <-chan BoundVar, out chan<- []BoundVar, status chan string) *Cli 
 		in:     in,
 		out:    out,
 		status: status,
+		sync:   make(chan bool),
 		vars:   make(map[string]map[string]BoundVar),
 	}
 
 	this.addShmGroup("placement")
-	this.addShmGroup("yawSettings")
-	this.addShmGroup("pitchSettings")
-	this.addShmGroup("rollSettings")
-	this.addShmGroup("desires")
-	this.addShmGroup("controller")
 	this.addShmGroup("controllerOut")
 	this.addShmVar("switches", "softKill")
+	this.addShmVar("controller", "enabled")
+	this.addShmVar("yawConf", "enabled")
+	this.addShmVar("pitchConf", "enabled")
+	this.addShmVar("rollConf", "enabled")
 	this.addShmGroup("power")
 
 	return this
@@ -72,27 +73,28 @@ func (this *Cli) addShmGroup(name string) {
 
 var cliRegex = regexp.MustCompile(`^(([A-Za-z]+\w*)?\.([A-Za-z]+\w*)?(\s+(\S+))?)|(\S*)$`)
 
-var cliShortcuts = map[string]BoundVar{
-	"k": MustBindVar("switches", "softKill", true),
-	"u": MustBindVar("switches", "softKill", false),
-	"e": MustBindVar("controller", "enabled", true),
-	"d": MustBindVar("controller", "enabled", false),
+var cliShortcuts = map[string]func(this *Cli){
+	"k": func(this *Cli) { this.out <- []BoundVar{MustBindVar("switches", "softKill", true)} },
+	"u": func(this *Cli) { this.out <- []BoundVar{MustBindVar("switches", "softKill", false)} },
+	"e": func(this *Cli) { this.out <- []BoundVar{MustBindVar("controller", "enabled", true)} },
+	"d": func(this *Cli) { this.out <- []BoundVar{MustBindVar("controller", "enabled", false)} },
 
-	"ye": MustBindVar("yawConf", "enabled", true),
-	"pe": MustBindVar("pitchConf", "enabled", true),
-	"re": MustBindVar("rollConf", "enabled", true),
-	"yd": MustBindVar("yawConf", "enabled", false),
-	"pd": MustBindVar("pitchConf", "enabled", false),
-	"rd": MustBindVar("rollConf", "enabled", false),
+	"ye": func(this *Cli) { this.out <- []BoundVar{MustBindVar("yawConf", "enabled", true)} },
+	"pe": func(this *Cli) { this.out <- []BoundVar{MustBindVar("pitchConf", "enabled", true)} },
+	"re": func(this *Cli) { this.out <- []BoundVar{MustBindVar("rollConf", "enabled", true)} },
+	"yd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("yawConf", "enabled", false)} },
+	"pd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("pitchConf", "enabled", false)} },
+	"rd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("rollConf", "enabled", false)} },
 
-	"yaw":   MustBindVar("placement", "yaw", nil),
-	"pitch": MustBindVar("placement", "pitch", nil),
-	"roll":  MustBindVar("placement", "roll", nil),
+	"yaw":   func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "yaw", nil)} },
+	"pitch": func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "pitch", nil)} },
+	"roll":  func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "roll", nil)} },
+
+	"se": func(this *Cli) { this.sync <- true },
+	"sd": func(this *Cli) { this.sync <- false },
 }
 
 func (this *Cli) Start() {
-	//go this.read()
-	//go this.write()
 	go this.run()
 }
 
@@ -115,33 +117,49 @@ func (this *Cli) run() {
 	this.drawCommand()
 	this.drawVars()
 
-	//const drawPeriod, pollPeriod = time.Second / 15, time.Second / 10
-	const drawPeriod, pollPeriod = time.Second / 15, time.Second * 2
+	const drawPeriod, pollPeriod = time.Second / 15, time.Second / 2
 	drawChan, pollChan := time.After(drawPeriod), time.After(pollPeriod)
-	//drawChan := time.After(drawPeriod)
-	needRedraw := true
+	needRedraw, sync := true, false
 
 	for {
 		select {
 		case v := <-this.in:
-			this.vars[v.Group][v.Name] = v
-			needRedraw = true
+			wrote := false
+			if gCache, ok := this.vars[v.Group]; ok {
+				if _, ok = gCache[v.Name]; ok {
+					this.vars[v.Group][v.Name] = v
+					wrote = true
+				}
+			}
+			if wrote {
+				needRedraw = true
+			} else {
+				this.status <- v.String()
+			}
 
 		case <-drawChan:
 			if needRedraw {
 				this.drawVars()
+				this.drawQuickView(sync)
 				needRedraw = false
 			}
 
 			drawChan = time.After(drawPeriod)
 
+		case sync = <-this.sync:
+			needRedraw = true
+
 		case <-pollChan:
-			varReqs := make([]BoundVar, 0)
-			for _, g := range this.vars {
-				for _, v := range g {
-					varReqs = append(varReqs, BoundVar{v.Var, nil})
+			if sync {
+				varReqs := make([]BoundVar, 0)
+				for _, g := range this.vars {
+					for _, v := range g {
+						varReqs = append(varReqs, BoundVar{v.Var, nil})
+					}
 				}
+				this.out <- varReqs
 			}
+			pollChan = time.After(pollPeriod)
 		}
 
 	}
@@ -181,11 +199,7 @@ func (this *Cli) processCommand() {
 	}
 
 	if shortcut, ok := cliShortcuts[valueStr]; ok && len(path) == 0 {
-		if shortcut.Value == nil {
-			this.lastGroup = shortcut.Group
-			this.lastName = shortcut.Name
-		}
-		this.out <- []BoundVar{shortcut}
+		shortcut(this)
 		return
 	}
 
@@ -243,22 +257,17 @@ func (this *Cli) drawVars() {
 	this.drawAxis("yaw", 0, 0, boxWidth, boxHeight)
 	this.drawAxis("pitch", boxWidth+1, 0, boxWidth, boxHeight)
 	this.drawAxis("roll", 2*(boxWidth+1), 0, boxWidth, boxHeight)
-	this.drawQuickView()
 }
 
 func (this *Cli) drawAxis(name string, x, y, width, height int) {
 	ls := ui.NewList()
 
-	settings := this.vars[name+"Settings"]
+	conf := this.vars[name+"Conf"]
 	textWidth := width - 3
 	ls.Items = []string{
-		padApart("DES:", this.vars["desires"][name].ValueString(), textWidth),
 		padApart("VAL:", this.vars["placement"][name].ValueString(), textWidth),
 		padApart("OUT:", this.vars["controllerOut"][name].ValueString(), textWidth),
-		padApart("P:", settings["p"].ValueString(), textWidth),
-		padApart("I:", settings["i"].ValueString(), textWidth),
-		padApart("D:", settings["d"].ValueString(), textWidth),
-		padApart("EN:", settings["enabled"].ValueString(), textWidth),
+		padApart("EN:", conf["enabled"].ValueString(), textWidth),
 	}
 
 	ls.X = x
@@ -270,7 +279,7 @@ func (this *Cli) drawAxis(name string, x, y, width, height int) {
 	ui.Render(ls)
 }
 
-func (this *Cli) drawQuickView() {
+func (this *Cli) drawQuickView(sync bool) {
 	colorBool := func(s string, b bool) string {
 		if b {
 			return fmt.Sprintf("[%s](fg-black,bg-white)", s)
@@ -293,7 +302,7 @@ func (this *Cli) drawQuickView() {
 
 	qv := ui.NewPar(fmt.Sprintf("%s\n%s\n%s\n%s",
 		// TODO implement sync toggle
-		colorBool("  SY  ", false),
+		colorBool("  SY  ", sync),
 		colorBool("  SK  ", softKill),
 		colorBool("  EN  ", controllerEnabled),
 		voltageStr,

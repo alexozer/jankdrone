@@ -9,5 +9,8 @@ __pycache__/
 .gcc-flags.json
 
 /jankcopter
-/{copter,handheld}/src/shm.{cpp,h}
+/copter/src/shm.cpp
+/copter/src/shm.h
+/handheld/src/shm.cpp
+/handheld/src/shm.h
 /client/shmdef.go

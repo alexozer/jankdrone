@@ -50,7 +50,8 @@ func (this *Serial) startSession(portChan chan *serial.Port) {
 		return
 	}
 	defer port.Close()
-	this.status <- fmt.Sprint("Serial disconnected on", this.portName)
+	this.Connected <- true
+	this.status <- fmt.Sprint("Serial connected on", this.portName)
 
 	portChan <- port
 
@@ -58,7 +59,8 @@ func (this *Serial) startSession(portChan chan *serial.Port) {
 	for {
 		n, err := port.Read(buf)
 		if err != nil {
-			this.status <- fmt.Sprint("Serial connected on", this.portName)
+			this.Connected <- false
+			this.status <- fmt.Sprint("Serial disconnected on", this.portName)
 			return
 		}
 
@@ -71,11 +73,13 @@ func (this *Serial) startSession(portChan chan *serial.Port) {
 
 func (this *Serial) write(portChan chan *serial.Port) {
 	port := <-portChan
-	select {
-	case port = <-portChan:
-	case msg := <-this.In:
-		for _, v := range msg {
-			port.Write(v)
+	for {
+		select {
+		case port = <-portChan:
+		case msg := <-this.In:
+			for _, v := range msg {
+				port.Write(v)
+			}
 		}
 	}
 }

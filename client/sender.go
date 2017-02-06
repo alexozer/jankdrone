@@ -27,6 +27,9 @@ func NewSender(varsIn <-chan []BoundVar, varsOut chan<- BoundVar, status chan st
 }
 
 func (this *Sender) Start() {
+	this.handheld.Start()
+	this.drone.Start()
+
 	encodedInChan := make(chan chan []byte)
 	encodedOutChan := make(chan chan [][]byte)
 	go this.read(encodedInChan)
@@ -97,6 +100,10 @@ func (this *Sender) write(encodedOutChan chan chan [][]byte) {
 				out = append(out, framedVar)
 			}
 
+			sz := 0
+			for _, s := range out {
+				sz += len(s)
+			}
 			encodedOut <- out
 		}
 	}
@@ -108,7 +115,6 @@ func (this *Sender) read(encodedInChan chan chan []byte) {
 		select {
 		case encodedIn = <-encodedInChan:
 		case encodedVar := <-encodedIn:
-
 			for len(encodedVar) > 0 {
 				shmMsg := new(shm.ShmMsg)
 				if int(encodedVar[0]) > len(encodedVar[1:]) {
