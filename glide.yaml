@@ -5,4 +5,3 @@ import:
 - package: github.com/gizak/termui
   version: ~2.2.0
 - package: github.com/currantlabs/ble
-- package: github.com/paypal/gatt
