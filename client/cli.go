@@ -18,6 +18,8 @@ const (
 	cmdWidth, cmdHeight = 3*(boxWidth+1) + quickViewWidth, 3
 
 	maxInputLen = cmdWidth - 3
+
+	statusLines = 5
 )
 
 type Cli struct {
@@ -140,15 +142,8 @@ func (this *Cli) run() {
 					varReqs = append(varReqs, BoundVar{v.Var, nil})
 				}
 			}
-
-		if shortcut, ok := cliShortcuts[valueStr]; ok && len(path) == 0 {
-			if shortcut.Value == nil {
-				lastGroup = shortcut.Group
-				lastName = shortcut.Name
-			}
-			this.out <- []BoundVar{shortcut}
-			continue
 		}
+
 	}
 }
 
@@ -186,6 +181,10 @@ func (this *Cli) processCommand() {
 	}
 
 	if shortcut, ok := cliShortcuts[valueStr]; ok && len(path) == 0 {
+		if shortcut.Value == nil {
+			this.lastGroup = shortcut.Group
+			this.lastName = shortcut.Name
+		}
 		this.out <- []BoundVar{shortcut}
 		return
 	}
@@ -293,12 +292,10 @@ func (this *Cli) drawQuickView() {
 	controllerEnabled := this.vars["controller"]["enabled"].Value.(bool)
 
 	qv := ui.NewPar(fmt.Sprintf("%s\n%s\n%s\n%s",
+		// TODO implement sync toggle
 		colorBool("  SY  ", false),
 		colorBool("  SK  ", softKill),
 		colorBool("  EN  ", controllerEnabled),
-		//fmt.Sprintf(" %s", colorBool(" SY ", false)), // TODO implement sync toggle
-		//fmt.Sprintf(" %s", colorBool(" SK ", softKill)),
-		//fmt.Sprintf(" %s", colorBool(" EN ", controllerEnabled)),
 		voltageStr,
 	))
 	qv.X, qv.Y = (boxWidth+1)*3, 0
@@ -318,14 +315,26 @@ func (this *Cli) drawCommand() {
 }
 
 func (this *Cli) drawStatus() {
-	for statusStr := range this.status {
-		par := ui.NewPar(statusStr)
-		par.Border = false
-		par.X, par.Y = 0, boxHeight+cmdHeight
-		par.Width, par.Height = cmdWidth, 1
+	statusQueue := make([]string, 0, statusLines)
 
-		ui.Render(par)
+	draw := func() {
+		st := ui.NewList()
+		st.Items = statusQueue
+		st.BorderLabel = "status"
+		st.X, st.Y = 0, boxHeight+cmdHeight
+		st.Width, st.Height = cmdWidth, cap(statusQueue)+2
+
+		ui.Render(st)
+	}
+
+	draw()
+	for statusStr := range this.status {
+		if len(statusQueue) < cap(statusQueue) {
+			statusQueue = append(statusQueue, statusStr)
+		} else {
+			copy(statusQueue[:len(statusQueue)-1], statusQueue[1:])
+			statusQueue[len(statusQueue)-1] = statusStr
+		}
+		draw()
 	}
 }
-
-//func (this *Cli) switchStatus(x, y, width, height int) *ui.Par {
