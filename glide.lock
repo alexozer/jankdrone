@@ -1,20 +1,55 @@
-hash: d72e7ebaad664b92c607594ee366c82b371f2fa5583f102ba433f292dc63bcb6
-updated: 2017-01-03T10:48:06.548462734-05:00
+hash: a18c99339e88966620e52c59ce4dbb209b5425b9669306683013e272ef416a5d
+updated: 2017-01-31T11:21:43.458651176-05:00
 imports:
+- name: github.com/currantlabs/ble
+  version: 47a65c1c8940c558ffaa0b9c014d31928a1a12ef
+  subpackages:
+  - linux
+  - linux/adv
+  - linux/att
+  - linux/gatt
+  - linux/hci
+  - linux/hci/cmd
+  - linux/hci/evt
+  - linux/hci/socket
+- name: github.com/gizak/termui
+  version: 24acd523c756fd9728824cdfac66aad9d8982fb7
 - name: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
   subpackages:
   - proto
+- name: github.com/maruel/panicparse
+  version: ad661195ed0e88491e0f14be6613304e3b1141d6
+  subpackages:
+  - stack
+- name: github.com/mattn/go-colorable
+  version: d228849504861217f796da67fae4f6e347643f15
+- name: github.com/mattn/go-isatty
+  version: 30a891c33c7cde7b02a981314b4228ec99380cca
+- name: github.com/mattn/go-runewidth
+  version: 737072b4e32b7a5018b4a7125da8d12de90e8045
+- name: github.com/mgutz/ansi
+  version: c286dcecd19ff979eeb73ea444e479b903f2cfcb
+- name: github.com/mgutz/logxi
+  version: aebf8a7d67ab4625e0fd4a665766fef9a709161b
+  subpackages:
+  - v1
+- name: github.com/mitchellh/go-wordwrap
+  version: ad45545899c7b13c020ea92b2072220eefad42b8
+- name: github.com/nsf/termbox-go
+  version: abe82ce5fb7a42fbd6784a5ceb71aff977e09ed8
 - name: github.com/paypal/gatt
   version: 4ae819d591cfc94c496c45deb55928469542beec
-  subpackages:
-  - linux
-  - linux/cmd
-  - linux/evt
-  - linux/gioctl
-  - linux/socket
-  - linux/util
-  - xpc
+- name: github.com/pkg/errors
+  version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: github.com/tarm/serial
   version: 37be519d49878d0098e34fb614136b81e6c87861
+- name: golang.org/x/net
+  version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
+  subpackages:
+  - context
+- name: golang.org/x/sys
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  subpackages:
+  - unix
 testImports: []
