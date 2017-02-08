@@ -24,13 +24,14 @@ class Controller {
 
 		class AxisControl {
 			public:
-				AxisControl(std::string name);
-				float out();
+				AxisControl(std::string name, bool mod = true);
+				float out(float dt);
 				void reset();
 
 			private:
+				bool m_mod;
 				bool* m_enabled;
-				float *m_current, *m_desire, *m_out,
+				float *m_current, *m_desire, *m_velDesire, *m_out,
 					*m_p, *m_i, *m_d;
 				PID m_pid;
 		};
@@ -38,10 +39,9 @@ class Controller {
 		bool m_enabledBefore;
 		unsigned long m_lastTime;
 		Thruster m_thrusters[NUM_THRUSTERS];
-		AxisControl m_yawControl, m_pitchControl, m_rollControl;
+		AxisControl m_yawControl, m_pitchControl, m_rollControl, m_zControl;
 
 		void initSettings();
 		void initThrusters();
 		void checkTorqueIndependence();
-		void applyVelDesires(unsigned long time);
 };

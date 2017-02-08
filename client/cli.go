@@ -48,7 +48,7 @@ func NewCli(in <-chan BoundVar, out chan<- []BoundVar, status chan string) *Cli 
 	this.addShmGroup("controllerOut")
 	this.addShmVar("switches", "softKill")
 	this.addShmVar("controller", "enabled")
-	this.addShmVar("altitudeConf", "enabled")
+	this.addShmVar("zConf", "enabled")
 	this.addShmVar("yawConf", "enabled")
 	this.addShmVar("pitchConf", "enabled")
 	this.addShmVar("rollConf", "enabled")
@@ -268,7 +268,7 @@ func padApart(s1, s2 string, width int) string {
 // currently an inherent property of termui and cannot easily be avoided by the
 // client. See https://github.com/gizak/termui/issues/122
 func (this *Cli) drawVars() {
-	this.drawAxis("altitude", 0, 0, boxWidth, boxHeight)
+	this.drawAxis("z", 0, 0, boxWidth, boxHeight)
 	this.drawAxis("yaw", boxWidth+1, 0, boxWidth, boxHeight)
 	this.drawAxis("pitch", 2*(boxWidth+1), 0, boxWidth, boxHeight)
 	this.drawAxis("roll", 3*(boxWidth+1), 0, boxWidth, boxHeight)

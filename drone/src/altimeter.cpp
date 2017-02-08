@@ -17,7 +17,7 @@ void Altimeter::operator()() {
 
 	} else if (m_sensor.available()) {
 		m_sensor.read();
-		shm().placement.altitude = m_sensor.altitude() - m_groundAltitude;
+		shm().placement.z = m_sensor.altitude() - m_groundAltitude;
 		shm().temperature.altimeter = m_sensor.temp();
 	}
 }

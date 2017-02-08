@@ -3,19 +3,14 @@
 #include "maths.h"
 
 PID::PID(std::function<float(float, float)> diffFunc):
-	m_diffFunc{diffFunc}, m_firstRun{true}, m_lastTimeMicros{0}, m_lastValue{0} {}
+	m_diffFunc{diffFunc}, m_firstRun{true}, m_lastValue{0} {}
 
-float PID::operator()(float value, float desire, float p, float i, float d) {
+float PID::operator()(float dt, float value, float desire, float p, float i, float d) {
 	if (m_firstRun) {
-		m_lastTimeMicros = micros();
 		m_lastValue = value;
 		m_firstRun = false;
 		return 0;
 	}
-
-	unsigned long nowMicros = micros();
-	float dt = (float)(nowMicros - m_lastTimeMicros) / 1e6f;
-	m_lastTimeMicros = nowMicros;
 
 	// TODO implement integral term
 	float error = m_diffFunc(desire, value);

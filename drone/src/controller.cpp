@@ -9,7 +9,8 @@ Controller::Controller():
 
 	m_yawControl{"yaw"},
 	m_pitchControl{"pitch"},
-	m_rollControl{"roll"}
+	m_rollControl{"roll"},
+	m_zControl{"z", false}
 {
 	initThrusters();
 	checkTorqueIndependence();
@@ -112,11 +113,10 @@ void Controller::operator()() {
 		return;
 	}
 
-	applyVelDesires(time);
-
-	float yawOut = m_yawControl.out();
-	float pitchOut = m_pitchControl.out();
-	float rollOut = m_rollControl.out();
+	float dt = (float)(time - m_lastTime) / 1e6;
+	float yawOut = m_yawControl.out(dt);
+	float pitchOut = m_pitchControl.out(dt);
+	float rollOut = m_rollControl.out(dt);
 	for (auto& t : m_thrusters) {
 		*t.shm = t.force.thrustPerTotalValue * shm().desires.force
 			+ t.yaw.thrustPerTotalValue * yawOut
@@ -127,20 +127,8 @@ void Controller::operator()() {
 	m_lastTime = time;
 }
 
-void Controller::applyVelDesires(unsigned long time) {
-	float dt = (float)(time - m_lastTime) / 1e6;
-	auto& des = shm().desires;
-	des.yaw += dt * des.yawVel;
-	des.pitch += dt * des.pitchVel;
-	des.roll += dt * des.rollVel;
-	des.altitude += dt * des.zVel;
-
-	des.yaw = pfmod(des.yaw, 360);
-	des.pitch = pfmod(des.pitch, 360);
-	des.roll = pfmod(des.roll, 360);
-}
-
-Controller::AxisControl::AxisControl(std::string name):
+Controller::AxisControl::AxisControl(std::string name, bool mod):
+	m_mod{mod},
 	m_pid{angleDiff}
 {
 	auto settings = shm().group(name + "Conf");
@@ -150,12 +138,16 @@ Controller::AxisControl::AxisControl(std::string name):
 	m_d = settings->var("d")->ptr<float>();
 	m_current = shm().placement.var(name)->ptr<float>();
 	m_desire = shm().desires.var(name)->ptr<float>();
+	m_velDesire = shm().desires.var(name + "Vel")->ptr<float>();
 	m_out = shm().controllerOut.var(name)->ptr<float>();
 }
 
-float Controller::AxisControl::out() {
+float Controller::AxisControl::out(float dt) {
 	if (*m_enabled) {
-		*m_out = m_pid(*m_current, *m_desire, *m_p, *m_i, *m_d);
+		*m_desire += dt * *m_velDesire;
+		if (m_mod) *m_desire = pfmod(*m_desire, 360);
+
+		*m_out = m_pid(dt, *m_current, *m_desire, *m_p, *m_i, *m_d);
 	} else {
 		*m_out = 0;
 	}

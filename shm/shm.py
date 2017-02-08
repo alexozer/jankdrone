@@ -34,7 +34,7 @@ untagged_shm = {
 
     'desires': {
         'force': 0.0,
-        'altitude': 0.0,
+        'z': 0.0,
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
@@ -52,14 +52,14 @@ untagged_shm = {
     },
 
     'controllerOut': {
-        'altitude': 0.0,
+        'z': 0.0,
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
     },
 
     'placement': {
-        'altitude': 0.0,
+        'z': 0.0,
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
@@ -99,7 +99,7 @@ untagged_shm = {
         'altimeter': 0,
     },
 
-    'altitudeConf': {
+    'zConf': {
         'enabled': False,
         'p': 0.001,
         'i': 0.0,

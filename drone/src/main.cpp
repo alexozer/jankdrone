@@ -15,8 +15,8 @@
 
 struct Main {
 	Thrust thrust;
-	//Imu imu;
-	//Altimeter altimeter;
+	Imu imu;
+	Altimeter altimeter;
 	Remote remote;
 	Controller controller;
 	Deadman deadman;
@@ -25,8 +25,8 @@ struct Main {
 
 	Main(): threads{
 		Thread([&] { thrust(); }, Thread::SECOND / 1000, &shm().threadTime.thrust),
-		//Thread([&] { imu(); }, 0, &shm().threadTime.imu),
-		//Thread([&] { altimeter(); }, Thread::SECOND / 15, &shm().threadTime.altimeter),
+		Thread([&] { imu(); }, 0, &shm().threadTime.imu),
+		Thread([&] { altimeter(); }, Thread::SECOND / 15, &shm().threadTime.altimeter),
 		Thread([&] { remote(); }, 0, &shm().threadTime.remote),
 		Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
 		Thread([&] { deadman(); }, Thread::SECOND / 30),
