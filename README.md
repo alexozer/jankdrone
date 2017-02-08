@@ -26,12 +26,19 @@ The jankest drone the world has ever seen.
 	- [x] Handheld serial to radio map
 	- [x] Handheld control desire serialization
 - Flight controller (hexcopter / 2n-copter)
-	- [x] Force
-	- [x] Absolute yaw
-	- [x] Pitch
-	- [x] Roll
-	- [ ] Altitude
-	- [ ] Relative yaw
+	- Absolute controls
+		- [x] Force
+		- [x] Yaw
+		- [x] Pitch
+		- [x] Roll
+		- [ ] Altitude
+		- [ ] Latitude and longitude
+	- Velocity controls
+		- [x] Yaw
+		- [x] Pitch
+		- [x] Roll
+		- [ ] X and Y
+		- [ ] Z (altitude)
 - Thrust writer
 	- [x] Basic linear writing
 	- [x] Calibration

@@ -8,7 +8,7 @@
 #include <SPI.h>
 #include "radio/radio_stream.h"
 
-constexpr int SERIAL_BAUD = 115200;
+constexpr unsigned long SERIAL_BAUD = 115200;
 
 constexpr int LEFT_BUTTON_PIN = 7,
 		  RIGHT_BUTTON_PIN = 6,
@@ -114,13 +114,13 @@ void inputsToRadio() {
 	}
 
 	float force = inputLerp(LEFT_Y_PIN, INVERT_LEFT_Y);
-	float yaw = inputLerp(LEFT_X_PIN, INVERT_LEFT_X) * 180;
+	float yawVel = inputLerp(LEFT_X_PIN, INVERT_LEFT_X) * 180;
 	float pitch = inputLerp(RIGHT_X_PIN, INVERT_RIGHT_X) * MAX_TILT;
 	float roll = inputLerp(RIGHT_Y_PIN, INVERT_RIGHT_Y) * MAX_TILT;
 
 	writeRadioVar(desireVar(SHM_DESIRES_FORCE_TAG, force));
-	writeRadioVar(desireVar(SHM_DESIRES_YAW_TAG, yaw));
-	writeRadioVar(desireVar(SHM_DESIRES_PITCH_TAG, pitch));
+	writeRadioVar(desireVar(SHM_DESIRES_YAW_TAG, yawVel));
+	writeRadioVar(desireVar(SHM_DESIRES_PITCHVEL_TAG, pitch));
 	writeRadioVar(desireVar(SHM_DESIRES_ROLL_TAG, roll));
 
 	radioStream.flush();

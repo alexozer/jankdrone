@@ -38,6 +38,13 @@ untagged_shm = {
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
+
+        'xVel': 0.0,
+        'yVel': 0.0,
+        'zVel': 0.0,
+        'yawVel': 0.0,
+        'pitchVel': 0.0,
+        'rollVel': 0.0,
     },
 
     'controller': {

@@ -5,6 +5,7 @@
 
 Controller::Controller():
 	m_enabledBefore{shm().var("controller.enabled")->get<bool>()}, 
+	m_lastTime{0},
 
 	m_yawControl{"yaw"},
 	m_pitchControl{"pitch"},
@@ -87,6 +88,7 @@ void Controller::checkTorqueIndependence() {
 }
 
 void Controller::operator()() {
+	size_t time = micros();
 	if (shm().controller.enabled) {
 		if (!m_enabledBefore) {
 			m_yawControl.reset();
@@ -94,6 +96,8 @@ void Controller::operator()() {
 			m_rollControl.reset();
 
 			m_enabledBefore = true;
+			m_lastTime = micros();
+			return;
 		}
 
 	} else {
@@ -108,6 +112,8 @@ void Controller::operator()() {
 		return;
 	}
 
+	applyVelDesires(time);
+
 	float yawOut = m_yawControl.out();
 	float pitchOut = m_pitchControl.out();
 	float rollOut = m_rollControl.out();
@@ -117,6 +123,21 @@ void Controller::operator()() {
 			+ t.pitch.thrustPerTotalValue * pitchOut
 			+ t.roll.thrustPerTotalValue * rollOut;
 	}
+
+	m_lastTime = time;
+}
+
+void Controller::applyVelDesires(size_t time) {
+	float dt = (float)(time - m_lastTime) / 1e6;
+	auto& des = shm().desires;
+	des.yaw += dt * des.yawVel;
+	des.pitch += dt * des.pitchVel;
+	des.roll += dt * des.rollVel;
+	des.altitude += dt * des.zVel;
+
+	des.yaw = pfmod(des.yaw, 360);
+	des.pitch = pfmod(des.pitch, 360);
+	des.roll = pfmod(des.roll, 360);
 }
 
 Controller::AxisControl::AxisControl(std::string name):

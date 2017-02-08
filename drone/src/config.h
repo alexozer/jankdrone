@@ -71,4 +71,4 @@ inline void beginI2C() {
 	Wire.begin(I2C_MASTER, 0x00, I2C_PINS_16_17, I2C_PULLUP_EXT, I2C_RATE_400);
 }
 
-constexpr int SERIAL_BAUD = 115200;
+constexpr unsigned long SERIAL_BAUD = 115200;
