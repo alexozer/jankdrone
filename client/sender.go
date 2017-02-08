@@ -21,7 +21,7 @@ func NewSender(varsIn <-chan []BoundVar, varsOut chan<- BoundVar, status chan st
 	return &Sender{
 		varsIn, varsOut,
 		status,
-		NewSerial("/dev/ttyUSB0", 38400, status),
+		NewSerial("/dev/ttyUSB0", 115200, status),
 		NewSerial("/dev/ttyACM0", 115200, status),
 	}
 }

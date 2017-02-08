@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	boxWidth, boxHeight = 16, 6
-	quickViewWidth      = 8
-	cmdWidth, cmdHeight = 3*(boxWidth+1) + quickViewWidth, 3
+	numBoxes                   = 4
+	boxWidth, boxHeight        = 16, 6
+	quickViewX, quickViewWidth = numBoxes * (boxWidth + 1), 8
+	cmdWidth, cmdHeight        = 4*(boxWidth+1) + quickViewWidth, 3
 
 	maxInputLen = cmdWidth - 3
 
@@ -47,6 +48,7 @@ func NewCli(in <-chan BoundVar, out chan<- []BoundVar, status chan string) *Cli 
 	this.addShmGroup("controllerOut")
 	this.addShmVar("switches", "softKill")
 	this.addShmVar("controller", "enabled")
+	this.addShmVar("altitudeConf", "enabled")
 	this.addShmVar("yawConf", "enabled")
 	this.addShmVar("pitchConf", "enabled")
 	this.addShmVar("rollConf", "enabled")
@@ -114,12 +116,13 @@ func (this *Cli) run() {
 	go ui.Loop()
 	go this.drawStatus()
 
-	this.drawCommand()
-	this.drawVars()
-
 	const drawPeriod, pollPeriod = time.Second / 15, time.Second / 2
 	drawChan, pollChan := time.After(drawPeriod), time.After(pollPeriod)
 	needRedraw, sync := true, false
+
+	this.drawCommand()
+	this.drawVars()
+	this.drawQuickView(sync)
 
 	for {
 		select {
@@ -254,9 +257,10 @@ func padApart(s1, s2 string, width int) string {
 // currently an inherent property of termui and cannot easily be avoided by the
 // client. See https://github.com/gizak/termui/issues/122
 func (this *Cli) drawVars() {
-	this.drawAxis("yaw", 0, 0, boxWidth, boxHeight)
-	this.drawAxis("pitch", boxWidth+1, 0, boxWidth, boxHeight)
-	this.drawAxis("roll", 2*(boxWidth+1), 0, boxWidth, boxHeight)
+	this.drawAxis("altitude", 0, 0, boxWidth, boxHeight)
+	this.drawAxis("yaw", boxWidth+1, 0, boxWidth, boxHeight)
+	this.drawAxis("pitch", 2*(boxWidth+1), 0, boxWidth, boxHeight)
+	this.drawAxis("roll", 3*(boxWidth+1), 0, boxWidth, boxHeight)
 }
 
 func (this *Cli) drawAxis(name string, x, y, width, height int) {
@@ -292,9 +296,9 @@ func (this *Cli) drawQuickView(sync bool) {
 
 	voltageStr := fmt.Sprintf("%.2fV", this.vars["power"]["voltage"].Value.(float64))
 	if this.vars["power"]["critical"].Value.(bool) {
-		voltageStr = colorize(voltageStr, "yellow")
-	} else if this.vars["power"]["low"].Value.(bool) {
 		voltageStr = colorize(voltageStr, "red")
+	} else if this.vars["power"]["low"].Value.(bool) {
+		voltageStr = colorize(voltageStr, "yellow")
 	}
 
 	softKill := this.vars["switches"]["softKill"].Value.(bool)
@@ -307,7 +311,7 @@ func (this *Cli) drawQuickView(sync bool) {
 		colorBool("  EN  ", controllerEnabled),
 		voltageStr,
 	))
-	qv.X, qv.Y = (boxWidth+1)*3, 0
+	qv.X, qv.Y = quickViewX, 0
 	qv.Width, qv.Height = quickViewWidth, boxHeight
 
 	ui.Render(qv)

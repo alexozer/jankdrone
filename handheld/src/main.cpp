@@ -8,12 +8,23 @@
 #include <SPI.h>
 #include "radio/radio_stream.h"
 
-constexpr int SOFT_KILL_PIN = 12,
-		  LEFT_X_PIN = A0, LEFT_Y_PIN = A1,
-		  RIGHT_X_PIN = A3, RIGHT_Y_PIN = A2,
-		  LED_PIN = 13,
+constexpr int LEFT_BUTTON_PIN = 7,
+		  RIGHT_BUTTON_PIN = 6,
+		  SOFT_KILL_PIN = RIGHT_BUTTON_PIN,
+		  UN_SOFT_KILL_PIN = LEFT_BUTTON_PIN,
+
+		  LEFT_X_PIN = A4, LEFT_Y_PIN = A3,
+		  RIGHT_X_PIN = A0, RIGHT_Y_PIN = A1,
 		  ANALOG_PINS[] = {LEFT_X_PIN, LEFT_Y_PIN, RIGHT_X_PIN, RIGHT_Y_PIN},
-		  INPUT_SEND_PERIOD = 100;
+
+		  LED_PIN = 4;
+
+constexpr bool INVERT_LEFT_X = false,
+		  INVERT_LEFT_Y = true,
+		  INVERT_RIGHT_X = false,
+		  INVERT_RIGHT_Y = true;
+
+constexpr int INPUT_SEND_PERIOD = 100;
 
 constexpr int MAX_INPUT = 1023;
 constexpr int MAX_TILT = 5;
@@ -26,7 +37,11 @@ constexpr int RADIO_NETWORK_ID = 100,
 		  RADIO_FREQUENCY = RF69_915MHZ; 
 constexpr bool HAVE_RFM69HCW = false;
 
-constexpr int RADIO_CS_PIN = 10,
+constexpr int MOSI_PIN = 11,
+		  MISO_PIN = 12,
+		  SCK_PIN = 13,
+
+		  RADIO_CS_PIN = 10,
 		  RADIO_IRQ_PIN = 2,
 		  RADIO_IRQN = 0,
 		  RADIO_RST_PIN = 9,
@@ -49,8 +64,9 @@ uint8_t sendBuf[255]; // Max size that length byte can describe
 size_t lastInputSend = millis();
 bool lastSoftKill = false;
 
-float inputLerp(int pin) {
-	return (float)(analogRead(pin) - MAX_INPUT) / (MAX_INPUT / 2);
+float inputLerp(int pin, bool invert) {
+	float l = (float)(analogRead(pin) - MAX_INPUT) / (MAX_INPUT / 2);
+	return invert ? -l : l;
 }
 
 void writeRadioVar(const ShmMsg& v) {
@@ -80,7 +96,12 @@ void inputsToRadio() {
 	if (t - lastInputSend < INPUT_SEND_PERIOD) return;
 	lastInputSend = t;
 
-	bool softKill = digitalRead(SOFT_KILL_PIN);
+	bool softKill = lastSoftKill;
+	if (!digitalRead(SOFT_KILL_PIN)) {
+		softKill = true;
+	} else if (!digitalRead(UN_SOFT_KILL_PIN)) {
+		softKill = false;
+	}
 	if (softKill != lastSoftKill) {
 		ShmMsg softKillMsg;
 		softKillMsg.tag = SHM_SWITCHES_SOFTKILL_TAG;
@@ -90,10 +111,10 @@ void inputsToRadio() {
 		lastSoftKill = softKill;
 	}
 
-	float force = inputLerp(LEFT_Y_PIN);
-	float yaw = inputLerp(LEFT_X_PIN) * 180;
-	float pitch = inputLerp(RIGHT_X_PIN) * MAX_TILT;
-	float roll = inputLerp(RIGHT_Y_PIN) * MAX_TILT;
+	float force = inputLerp(LEFT_Y_PIN, INVERT_LEFT_Y);
+	float yaw = inputLerp(LEFT_X_PIN, INVERT_LEFT_X) * 180;
+	float pitch = inputLerp(RIGHT_X_PIN, INVERT_RIGHT_X) * MAX_TILT;
+	float roll = inputLerp(RIGHT_Y_PIN, INVERT_RIGHT_Y) * MAX_TILT;
 
 	writeRadioVar(desireVar(SHM_DESIRES_FORCE_TAG, force));
 	writeRadioVar(desireVar(SHM_DESIRES_YAW_TAG, yaw));
@@ -111,8 +132,9 @@ void mapStream(Stream* s1, Stream* s2) {
 }
 
 void setup() {
-	Serial.begin(38400);
+	Serial.begin(115200);
 	pinMode(SOFT_KILL_PIN, INPUT_PULLUP);
+	pinMode(UN_SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(LED_PIN, OUTPUT);
 }
 
@@ -120,5 +142,4 @@ void loop() {
 	inputsToRadio();
 	mapStream(&radioStream, &Serial);
 	mapStream(&Serial, &radioStream);
-	digitalWrite(LED_PIN, !digitalRead(SOFT_KILL_PIN));
 }
