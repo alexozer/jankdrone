@@ -1,0 +1,30 @@
+#######################################
+# Syntax Coloring Map 
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+MPL3115A2	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin  KEYWORD2
+readAltitude  KEYWORD2
+readAltitudeFt  KEYWORD2
+readPressure  KEYWORD2
+readTemp  KEYWORD2
+readTempF  KEYWORD2
+setModeBarometer  KEYWORD2
+setModeAltimeter  KEYWORD2
+setModeStandby  KEYWORD2
+setModeActive  KEYWORD2
+setOversampleRate KEYWORD2
+enableEventFlags KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
