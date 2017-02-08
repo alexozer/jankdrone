@@ -18,7 +18,7 @@ class MPL3115A2 {
 	public:
 		MPL3115A2();
 
-		void begin(); // Gets sensor on the I2C bus.
+		void begin(bool beginWire = true); // Gets sensor on the I2C bus.
 		bool available(); // Returns if sensor data is available for immediate read
 		void read(); // Waits until sensor data available and then reads
 

@@ -100,8 +100,10 @@ MPL3115A2::MPL3115A2():
 	m_tempMsb{0}, m_tempLsb{0},
 	m_barometerMode{false} {}
 
-void MPL3115A2::begin() {
-	Wire.begin();
+void MPL3115A2::begin(bool beginWire) {
+	if (beginWire) {
+		Wire.begin();
+	}
 	setModeAltimeter();
 	toggleOneShot();
 }
