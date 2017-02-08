@@ -2,7 +2,7 @@
 #include "altimeter.h"
 
 Altimeter::Altimeter(): m_groundAltitude{0} {
-	m_sensor.begin();
+	m_sensor.begin(false);
 	m_sensor.setModeAltimeter();
 	m_sensor.setOversampleRate(7); // Set Oversample to the recommended 128
 	m_sensor.enableEventFlags(); // Enable all three pressure and temp event flags 

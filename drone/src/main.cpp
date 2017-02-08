@@ -15,7 +15,7 @@
 
 struct Main {
 	Thrust thrust;
-	//Imu imu;
+	Imu imu;
 	Altimeter altimeter;
 	Remote remote;
 	Controller controller;
@@ -25,7 +25,7 @@ struct Main {
 
 	Main(): threads{
 		Thread([&] { thrust(); }, Thread::SECOND / 1000, &shm().threadTime.thrust),
-		//Thread([&] { imu(); }, 0, &shm().threadTime.imu),
+		Thread([&] { imu(); }, 0, &shm().threadTime.imu),
 		Thread([&] { altimeter(); }, Thread::SECOND / 15, &shm().threadTime.altimeter),
 		Thread([&] { remote(); }, 0, &shm().threadTime.remote),
 		Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
@@ -38,7 +38,8 @@ struct Main {
 };
 
 void setup() {
-	Serial.begin(115200);
+	beginI2C();
+	Serial.begin(SERIAL_BAUD);
 	//while (!Serial);
 
 	Led::off();

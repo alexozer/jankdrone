@@ -8,6 +8,8 @@
 #include <SPI.h>
 #include "radio/radio_stream.h"
 
+constexpr int SERIAL_BAUD = 115200;
+
 constexpr int LEFT_BUTTON_PIN = 7,
 		  RIGHT_BUTTON_PIN = 6,
 		  SOFT_KILL_PIN = RIGHT_BUTTON_PIN,
@@ -132,7 +134,7 @@ void mapStream(Stream* s1, Stream* s2) {
 }
 
 void setup() {
-	Serial.begin(115200);
+	Serial.begin(SERIAL_BAUD);
 	pinMode(SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(UN_SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(LED_PIN, OUTPUT);

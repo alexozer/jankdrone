@@ -1217,13 +1217,6 @@ Thread updatePlacementThread(&updatePlacement, Thread::SECOND / 1000);
 
 void setup()
 {
-//  Wire.begin();
-//  TWBR = 12;  // 400 kbit/sec I2C speed for Pro Mini
-  // Setup for Master mode, pins 18/19, external pullups, 400kHz for Teensy 3.1
-  Wire.begin(I2C_MASTER, 0x00, I2C_PINS_16_17, I2C_PULLUP_EXT, I2C_RATE_400);
-  delay(4000);
-  Serial.begin(38400);
-  
   // Set up the interrupt pin, its set as active high, push-pull
   pinMode(intPin, INPUT);
   

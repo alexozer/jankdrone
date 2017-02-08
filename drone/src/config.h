@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <RFM69.h>
+#include <i2c_t3.h>
 
 /* Constants which describe fixed properties of the drone. Although it may be
  * more consistent and convenient to define these as default values in shm,
@@ -64,3 +65,10 @@ constexpr int LED_PIN = 21,
 		  NUM_LEDS = LED_ROWS * LED_COLS;
 constexpr float LED_VOLTAGE = 5,
 		  LED_CURRENT_MA = 250;
+
+inline void beginI2C() {
+	// Setup for Master mode, pins 16/17, external pullups, 400kHz for Teensy 3.1
+	Wire.begin(I2C_MASTER, 0x00, I2C_PINS_16_17, I2C_PULLUP_EXT, I2C_RATE_400);
+}
+
+constexpr int SERIAL_BAUD = 115200;
