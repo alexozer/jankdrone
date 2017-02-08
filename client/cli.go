@@ -75,23 +75,25 @@ func (this *Cli) addShmGroup(name string) {
 
 var cliRegex = regexp.MustCompile(`^(([A-Za-z]+\w*)?\.([A-Za-z]+\w*)?(\s+(\S+))?)|(\S*)$`)
 
-var cliShortcuts = map[string]func(this *Cli){
-	"k": func(this *Cli) { this.out <- []BoundVar{MustBindVar("switches", "softKill", true)} },
-	"u": func(this *Cli) { this.out <- []BoundVar{MustBindVar("switches", "softKill", false)} },
-	"e": func(this *Cli) { this.out <- []BoundVar{MustBindVar("controller", "enabled", true)} },
-	"d": func(this *Cli) { this.out <- []BoundVar{MustBindVar("controller", "enabled", false)} },
+var cliShortcuts = map[string]BoundVar{
+	"k": MustBindVar("switches", "softKill", true),
+	"u": MustBindVar("switches", "softKill", false),
+	"e": MustBindVar("controller", "enabled", true),
+	"d": MustBindVar("controller", "enabled", false),
 
-	"ye": func(this *Cli) { this.out <- []BoundVar{MustBindVar("yawConf", "enabled", true)} },
-	"pe": func(this *Cli) { this.out <- []BoundVar{MustBindVar("pitchConf", "enabled", true)} },
-	"re": func(this *Cli) { this.out <- []BoundVar{MustBindVar("rollConf", "enabled", true)} },
-	"yd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("yawConf", "enabled", false)} },
-	"pd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("pitchConf", "enabled", false)} },
-	"rd": func(this *Cli) { this.out <- []BoundVar{MustBindVar("rollConf", "enabled", false)} },
+	"ye": MustBindVar("yawConf", "enabled", true),
+	"pe": MustBindVar("pitchConf", "enabled", true),
+	"re": MustBindVar("rollConf", "enabled", true),
+	"yd": MustBindVar("yawConf", "enabled", false),
+	"pd": MustBindVar("pitchConf", "enabled", false),
+	"rd": MustBindVar("rollConf", "enabled", false),
 
-	"yaw":   func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "yaw", nil)} },
-	"pitch": func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "pitch", nil)} },
-	"roll":  func(this *Cli) { this.out <- []BoundVar{MustBindVar("placement", "roll", nil)} },
+	"yaw":   MustBindVar("placement", "yaw", nil),
+	"pitch": MustBindVar("placement", "pitch", nil),
+	"roll":  MustBindVar("placement", "roll", nil),
+}
 
+var cliFuncs = map[string]func(this *Cli){
 	"se": func(this *Cli) { this.sync <- true },
 	"sd": func(this *Cli) { this.sync <- false },
 }
@@ -202,7 +204,16 @@ func (this *Cli) processCommand() {
 	}
 
 	if shortcut, ok := cliShortcuts[valueStr]; ok && len(path) == 0 {
-		shortcut(this)
+		this.out <- []BoundVar{shortcut}
+		if shortcut.Value == nil {
+			this.lastGroup = shortcut.Group
+			this.lastName = shortcut.Name
+		}
+		return
+	}
+
+	if f, ok := cliFuncs[valueStr]; ok && len(path) == 0 {
+		f(this)
 		return
 	}
 
