@@ -6,18 +6,18 @@ namespace mission {
 
 class Timer : public BaseTask {
 	public:
-		Timer(size_t period);
+		Timer(unsigned long period);
 		bool onFirstRun() override;
 		bool onRun() override;
 
 	private:
-		size_t m_period;
-		size_t m_startTime;
+		unsigned long m_period;
+		unsigned long m_startTime;
 };
 
 class Timeout : public BaseTask {
 	public:
-		Timeout(Task task, size_t timeout);
+		Timeout(Task task, unsigned long timeout);
 		bool onRun() override;
 		bool timedOut() const;
 

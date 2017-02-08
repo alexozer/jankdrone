@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "thread.h"
 
-Thread::Thread(std::function<void()> func, size_t intervalMicros, int* tickTime):
+Thread::Thread(std::function<void()> func, unsigned long intervalMicros, int* tickTime):
 	m_func{func}, m_interval{intervalMicros}, m_tickTime{tickTime}, m_hasRun{false} {}
 
 void Thread::operator()() {

@@ -88,7 +88,7 @@ void Controller::checkTorqueIndependence() {
 }
 
 void Controller::operator()() {
-	size_t time = micros();
+	unsigned long time = micros();
 	if (shm().controller.enabled) {
 		if (!m_enabledBefore) {
 			m_yawControl.reset();
@@ -127,7 +127,7 @@ void Controller::operator()() {
 	m_lastTime = time;
 }
 
-void Controller::applyVelDesires(size_t time) {
+void Controller::applyVelDesires(unsigned long time) {
 	float dt = (float)(time - m_lastTime) / 1e6;
 	auto& des = shm().desires;
 	des.yaw += dt * des.yawVel;

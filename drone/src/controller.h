@@ -36,12 +36,12 @@ class Controller {
 		};
 
 		bool m_enabledBefore;
-		size_t m_lastTime;
+		unsigned long m_lastTime;
 		Thruster m_thrusters[NUM_THRUSTERS];
 		AxisControl m_yawControl, m_pitchControl, m_rollControl;
 
 		void initSettings();
 		void initThrusters();
 		void checkTorqueIndependence();
-		void applyVelDesires(size_t time);
+		void applyVelDesires(unsigned long time);
 };

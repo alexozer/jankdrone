@@ -7,15 +7,15 @@ class Thread {
 	public:
 		static constexpr int SECOND = 1e6;
 
-		Thread(std::function<void()> func, size_t intervalMicros, int* tickTime = nullptr);
+		Thread(std::function<void()> func, unsigned long intervalMicros, int* tickTime = nullptr);
 		void operator()();
 
 	private:
 		std::function<void()> m_func;
-		size_t m_interval;
+		unsigned long m_interval;
 		int* m_tickTime;
 
-		size_t m_lastTime;
+		unsigned long m_lastTime;
 		bool m_hasRun;
 };
 

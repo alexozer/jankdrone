@@ -3,7 +3,7 @@
 
 using namespace mission;
 
-Timer::Timer(size_t period): m_period{period} {}
+Timer::Timer(unsigned long period): m_period{period} {}
 
 bool Timer::onFirstRun() {
 	m_startTime = millis();
@@ -14,7 +14,7 @@ bool Timer::onRun() {
 	return millis() - m_startTime >= m_period;
 }
 
-Timeout::Timeout(Task task, size_t timeout):
+Timeout::Timeout(Task task, unsigned long timeout):
 	m_task{task},
 	m_timer{make<Timer>(timeout)},
 	m_timedOut{false} {}

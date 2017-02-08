@@ -12,7 +12,7 @@ class PID {
 	private:
 		std::function<float(float, float)> m_diffFunc;
 		bool m_firstRun;
-		size_t m_lastTimeMicros;
+		unsigned long m_lastTimeMicros;
 		float m_lastValue;
 };
 

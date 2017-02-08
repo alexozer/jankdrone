@@ -59,7 +59,7 @@ void Led::calibration() {
 void Led::flying() {
 	constexpr int COLOR_PERIOD = 5000,
 			  WAVE_PERIOD = 500;
-	size_t t = millis();
+	unsigned long t = millis();
 	int colorLerp = t % COLOR_PERIOD * 255 / COLOR_PERIOD;
 	int waveLerp = t % WAVE_PERIOD * 255 / WAVE_PERIOD;
 
