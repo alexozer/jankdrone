@@ -1413,68 +1413,7 @@ void loop()
 
 #ifdef DEBUG
     Serial.print("Gyro temperature is ");  Serial.print(temperature, 1);  Serial.println(" degrees C"); // Print T values to tenths of s degree C
-#endif
- 
-    D1 = MS5637Read(ADC_D1, OSR);  // get raw pressure value
-    D2 = MS5637Read(ADC_D2, OSR);  // get raw temperature value
-    dT = D2 - Pcal[5]*pow(2,8);    // calculate temperature difference from reference
-    OFFSET = Pcal[2]*pow(2, 17) + dT*Pcal[4]/pow(2,6);
-    SENS = Pcal[1]*pow(2,16) + dT*Pcal[3]/pow(2,7);
- 
-    Temperature = (2000 + (dT*Pcal[6])/pow(2, 23))/100;           // First-order Temperature in degrees Centigrade
-//
-// Second order corrections
-    if(Temperature > 20) 
-    {
-      T2 = 5*dT*dT/pow(2, 38); // correction for high temperatures
-      OFFSET2 = 0;
-      SENS2 = 0;
-    }
-    if(Temperature < 20)                   // correction for low temperature
-    {
-      T2      = 3*dT*dT/pow(2, 33); 
-      OFFSET2 = 61*(100*Temperature - 2000)*(100*Temperature - 2000)/16;
-      SENS2   = 29*(100*Temperature - 2000)*(100*Temperature - 2000)/16;
-    } 
-    if(Temperature < -15)                      // correction for very low temperature
-    {
-      OFFSET2 = OFFSET2 + 17*(100*Temperature + 1500)*(100*Temperature + 1500);
-      SENS2 = SENS2 + 9*(100*Temperature + 1500)*(100*Temperature + 1500);
-    }
- // End of second order corrections
- //
-     Temperature = Temperature - T2/100;
-     OFFSET = OFFSET - OFFSET2;
-     SENS = SENS - SENS2;
- 
-     Pressure = (((D1*SENS)/pow(2, 21) - OFFSET)/pow(2, 15))/100;  // Pressure in mbar or kPa
-  
-    const int station_elevation_m = 1050.0*0.3048; // Accurate for the roof on my house; convert from feet to meters
 
-    float baroin = Pressure; // pressure is now in millibars
-
-    // Formula to correct absolute pressure in millbars to "altimeter pressure" in inches of mercury 
-    // comparable to weather report pressure
-    float part1 = baroin - 0.3; //Part 1 of formula
-    const float part2 = 0.0000842288;
-    float part3 = pow(part1, 0.190284);
-    float part4 = (float)station_elevation_m / part3;
-    float part5 = (1.0 + (part2 * part4));
-    float part6 = pow(part5, 5.2553026);
-    float altimeter_setting_pressure_mb = part1 * part6; // Output is now in adjusted millibars
-    baroin = altimeter_setting_pressure_mb * 0.02953;
-
-	shm().placement.altitude = 145366.45*(1. - pow((Pressure/1013.25), 0.190284));
-   
-#ifdef DEBUG
-    Serial.print("Digital temperature value = "); Serial.print( (float)Temperature, 2); Serial.println(" C"); // temperature in degrees Celsius
-    Serial.print("Digital temperature value = "); Serial.print(9.*(float) Temperature/5. + 32., 2); Serial.println(" F"); // temperature in degrees Fahrenheit
-    Serial.print("Digital pressure value = "); Serial.print((float) Pressure, 2);  Serial.println(" mbar");// pressure in millibar
-
-    Serial.print("Altitude = "); Serial.print(altitude, 2); Serial.println(" feet");
-#endif
-    
-#ifdef DEBUG
     Serial.print("Yaw, Pitch, Roll: ");
     Serial.print(yaw, 2);
     Serial.print(", ");

@@ -14,3 +14,4 @@ __pycache__/
 /handheld/src/shm.cpp
 /handheld/src/shm.h
 /client/shmdef.go
+/shm/shm.pb.g0

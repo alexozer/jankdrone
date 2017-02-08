@@ -15,6 +15,7 @@ untagged_shm = {
         'softKill': True,
         'calibrateEscs': False,
         'calibrateImu': False,
+        'calibrateAltimeter': False,
     },
 
     # Specified from 0 degrees and moving counterclockwise
@@ -33,6 +34,7 @@ untagged_shm = {
 
     'desires': {
         'force': 0.0,
+        'altitude': 0.0,
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
@@ -43,6 +45,7 @@ untagged_shm = {
     },
 
     'controllerOut': {
+        'altitude': 0.0,
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
@@ -57,6 +60,7 @@ untagged_shm = {
 
     'temperature': {
         'gyro': 0.0,
+        'altimeter': 0.0,
     },
 
     'power': {
@@ -85,6 +89,14 @@ untagged_shm = {
         'imu': 0,
         'controller': 0,
         'led': 0,
+        'altimeter': 0,
+    },
+
+    'altitudeConf': {
+        'enabled': False,
+        'p': 0.001,
+        'i': 0.0,
+        'd': 0.0,
     },
 
     'yawConf': {

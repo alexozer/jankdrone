@@ -49,8 +49,6 @@ constexpr bool OFFSET_YAW = false,
 		  NEGATE_ROLL = true;
 
 constexpr int IMU_INT_PIN = 8,
-		  IMU_SDA_PIN = 17,
-		  IMU_SCL_PIN = 16,
 		  IMU_CALIBRATED_ADDRESS = 1,
 		  IMU_CALIBRATION_ADDRESS = 2;
 
