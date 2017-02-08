@@ -24,9 +24,14 @@ The jankest quadcopter the world has ever seen.
 	- [x] Client terminal status GUI
 	- [X] Client command REPL
 	- [x] Handheld serial to radio map
-	- [x] Handheld control desire input serialization
-- Controller
-	- [x] Hexcopter / 2n-copter support
+	- [x] Handheld control desire serialization
+- Flight controller (hexcopter / 2n-copter)
+	- [x] Force
+	- [x] Absolute yaw
+	- [x] Pitch
+	- [x] Roll
+	- [ ] Altitude
+	- [ ] Relative yaw
 - Thrust writer
 	- [x] Basic linear writing
 	- [x] Calibration
@@ -75,7 +80,13 @@ The jankest quadcopter the world has ever seen.
 	- [x] DJI Phantom-style props that don't vibrate like crazy
 
 ### Handheld
-- [x] Gutted Xbox controller, replaced with old Arduino Nano
-- [x] Joysticks
-- [x] Softkill toggle switch
-- [ ] Radio tranceiver
+- Version 1 (too cramped)
+	- [x] Gutted Xbox controller for old Arduino Nano
+	- [x] 2 joysticks
+	- [x] Softkill toggle switch
+- Version 2
+	- [x] Old acryllic Raspberry Pi case
+	- [x] Mounting protoboard
+	- [x] 2 joysticks with embedded buttons
+	- [x] Radio tranceiver
+	- [ ] External power and regulator
