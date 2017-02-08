@@ -1,4 +1,4 @@
-package: github.com/alexozer/jankcopter
+package: github.com/alexozer/jankdrone
 import:
 - package: github.com/tarm/serial
 - package: github.com/golang/protobuf

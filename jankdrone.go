@@ -1,6 +1,6 @@
 package main
 
-import "github.com/alexozer/jankcopter/client"
+import "github.com/alexozer/jankdrone/client"
 
 func main() {
 	out, in := make(chan []client.BoundVar), make(chan client.BoundVar)

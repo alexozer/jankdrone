@@ -5,7 +5,7 @@ import (
 	"log"
 	"math"
 
-	"github.com/alexozer/jankcopter/shm"
+	"github.com/alexozer/jankdrone/shm"
 	"github.com/golang/protobuf/proto"
 )
 

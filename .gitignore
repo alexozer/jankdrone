@@ -8,9 +8,9 @@ __pycache__/
 .clang_complete
 .gcc-flags.json
 
-/jankcopter
-/copter/src/shm.cpp
-/copter/src/shm.h
+/jankdrone
+/drone/src/shm.cpp
+/drone/src/shm.h
 /handheld/src/shm.cpp
 /handheld/src/shm.h
 /client/shmdef.go

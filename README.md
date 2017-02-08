@@ -1,5 +1,5 @@
-# jankcopter
-The jankest quadcopter the world has ever seen.
+# jankdrone
+The jankest drone the world has ever seen.
 
 # Dependencies
 - platformio
