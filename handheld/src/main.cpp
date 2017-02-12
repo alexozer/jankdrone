@@ -119,8 +119,8 @@ void inputsToRadio() {
 	float roll = inputLerp(RIGHT_Y_PIN, INVERT_RIGHT_Y) * MAX_TILT;
 
 	writeRadioVar(desireVar(SHM_DESIRES_FORCE_TAG, force));
-	writeRadioVar(desireVar(SHM_DESIRES_YAW_TAG, yawVel));
-	writeRadioVar(desireVar(SHM_DESIRES_PITCHVEL_TAG, pitch));
+	writeRadioVar(desireVar(SHM_DESIRES_YAWVEL_TAG, yawVel));
+	writeRadioVar(desireVar(SHM_DESIRES_PITCH_TAG, pitch));
 	writeRadioVar(desireVar(SHM_DESIRES_ROLL_TAG, roll));
 
 	radioStream.flush();
