@@ -45,7 +45,7 @@ The jankest drone the world has ever seen.
 	- [ ] Force-thrust function from bollard-poll
 - [x] Voltage measurement
 - [x] LED strips
-- [x] Deadman (kill / land on disconnection, critical battery)
+- [x] Deadman (kill / land in critical conditions)
 - Autonomous
 	- [x] Mission framework
 	- [ ] Missions
@@ -58,7 +58,7 @@ The jankest drone the world has ever seen.
 	- [x] ESC plugs
 	- [x] Voltage monitor wire
 	- [x] LED strips
-	- [ ] RFM69 Radio transceiver
+	- [x] RFM69 Radio transceiver
 - Power board
 	- [x] 12V power rail
 	- [x] Voltage measurement source
@@ -66,7 +66,7 @@ The jankest drone the world has ever seen.
 - Handheld controller
 	- [x] Joysticks
 	- [x] Softkill switch
-	- [ ] Radio tranceiver
+	- [x] Radio tranceiver
 
 ## Mechanical
 
@@ -96,4 +96,4 @@ The jankest drone the world has ever seen.
 	- [x] Mounting protoboard
 	- [x] 2 joysticks with embedded buttons
 	- [x] Radio tranceiver
-	- [ ] External power and regulator
+	- [x] External power and regulator
