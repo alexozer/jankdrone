@@ -16,7 +16,7 @@ constexpr int LEFT_BUTTON_PIN = 7,
 		  UN_SOFT_KILL_PIN = LEFT_BUTTON_PIN,
 
 		  LEFT_X_PIN = A4, LEFT_Y_PIN = A3,
-		  RIGHT_X_PIN = A0, RIGHT_Y_PIN = A1,
+		  RIGHT_X_PIN = A1, RIGHT_Y_PIN = A0,
 		  ANALOG_PINS[] = {LEFT_X_PIN, LEFT_Y_PIN, RIGHT_X_PIN, RIGHT_Y_PIN},
 
 		  LED_PIN = 4;
@@ -28,16 +28,17 @@ constexpr bool INVERT_LEFT_X = false,
 
 constexpr int INPUT_SEND_PERIOD = 100;
 
+constexpr float DEAD_ZONE = 0.05;
 constexpr int MAX_INPUT = 1023;
 constexpr int MAX_TILT = 5;
 
 constexpr int RADIO_NETWORK_ID = 100,
-		  RADIO_NODE_ID = 1,
-		  RADIO_RECEIVER_ID = 2,
+		  RADIO_NODE_ID = 2,
+		  RADIO_RECEIVER_ID = 1,
 
 		  // Set based on your RF69 module
 		  RADIO_FREQUENCY = RF69_915MHZ; 
-constexpr bool HAVE_RFM69HCW = false;
+constexpr bool HAVE_RFM69HCW = true;
 
 constexpr int MOSI_PIN = 11,
 		  MISO_PIN = 12,
@@ -45,29 +46,31 @@ constexpr int MOSI_PIN = 11,
 
 		  RADIO_CS_PIN = 10,
 		  RADIO_IRQ_PIN = 2,
-		  RADIO_IRQN = 0,
 		  RADIO_RST_PIN = 9,
 		  RADIO_POWER = 31; // [0, 31]
 
 RadioStream radioStream(
 		RADIO_CS_PIN,
 		RADIO_IRQ_PIN,
-		RADIO_IRQN,
-		RADIO_RST_PIN,
-		RADIO_FREQUENCY,
-		RADIO_NODE_ID,
-		RADIO_RECEIVER_ID,
-		RADIO_NETWORK_ID,
-		RADIO_POWER,
 		HAVE_RFM69HCW
 );
 
 uint8_t sendBuf[255]; // Max size that length byte can describe
 size_t lastInputSend = millis();
+bool softKill = false;
 bool lastSoftKill = false;
 
+void readSoftKill() {
+	if (!digitalRead(SOFT_KILL_PIN)) {
+		softKill = true;
+	} else if (!digitalRead(UN_SOFT_KILL_PIN)) {
+		softKill = false;
+	}
+}
+
 float inputLerp(int pin, bool invert) {
-	float l = (float)(analogRead(pin) - MAX_INPUT) / (MAX_INPUT / 2);
+	float l = (float)(analogRead(pin) - MAX_INPUT / 2) / (MAX_INPUT / 2);
+	if (fabs(l) <= DEAD_ZONE) return 0;
 	return invert ? -l : l;
 }
 
@@ -98,13 +101,8 @@ void inputsToRadio() {
 	if (t - lastInputSend < INPUT_SEND_PERIOD) return;
 	lastInputSend = t;
 
-	bool softKill = lastSoftKill;
-	if (!digitalRead(SOFT_KILL_PIN)) {
-		softKill = true;
-	} else if (!digitalRead(UN_SOFT_KILL_PIN)) {
-		softKill = false;
-	}
-	if (softKill != lastSoftKill) {
+	// Always send sk if sk'd so we never miss it
+	if (softKill || softKill != lastSoftKill) {
 		ShmMsg softKillMsg;
 		softKillMsg.tag = SHM_SWITCHES_SOFTKILL_TAG;
 		softKillMsg.which_value = ShmMsg_boolValue_tag;
@@ -138,9 +136,19 @@ void setup() {
 	pinMode(SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(UN_SOFT_KILL_PIN, INPUT_PULLUP);
 	pinMode(LED_PIN, OUTPUT);
+
+	radioStream.begin(
+		RADIO_FREQUENCY,
+		RADIO_NODE_ID,
+		RADIO_RECEIVER_ID,
+		RADIO_NETWORK_ID,
+		RADIO_RST_PIN,
+		RADIO_POWER
+	);
 }
 
 void loop() {
+	readSoftKill();
 	inputsToRadio();
 	mapStream(&radioStream, &Serial);
 	mapStream(&Serial, &radioStream);
