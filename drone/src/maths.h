@@ -15,7 +15,9 @@ class PID {
 		float m_lastValue;
 };
 
-float pfmod(float a, float mod);
+// Split float point mod [-mod/2, mod/2]
+float splitFmod(float a, float mod);
+
 float angleDiff(float a, float b);
 bool withinDeadband(float a, float b, float deadband, bool useMod);
 bool fequals(float a, float b);

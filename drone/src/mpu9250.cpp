@@ -1209,9 +1209,9 @@ void updatePlacement() {
 		roll = -roll;
 	}
 
-	shm().placement.yaw = pfmod(yaw, 360);
-	shm().placement.pitch = pfmod(pitch, 360);
-	shm().placement.roll = pfmod(roll, 360);
+	shm().placement.yaw = splitFmod(yaw, 360);
+	shm().placement.pitch = splitFmod(pitch, 360);
+	shm().placement.roll = splitFmod(roll, 360);
 }
 Thread updatePlacementThread(&updatePlacement, Thread::SECOND / 1000);
 
@@ -1310,7 +1310,7 @@ void setup()
   
   delay(1000);  
 
-  attachInterrupt(intPin, myinthandler, RISING);  // define interrupt for INT pin output of MPU9250
+  attachInterrupt(digitalPinToInterrupt(intPin), myinthandler, RISING);  // define interrupt for INT pin output of MPU9250
 
   }
   else

@@ -21,15 +21,16 @@ void PID::reset() {
 	m_firstRun = true;
 }
 
-float pfmod(float a, float mod) {
-	float modded = std::fmod(a, mod);
-	if (modded < 0) modded += mod;
+float splitFmod(float a, float mod) {
+	float modded = fmod(a, mod);
+	if (fabs(modded) > mod / 2) {
+		modded += modded > 0 ? -mod : mod;
+	}
 	return modded;
 }
 
 float angleDiff(float a, float b) {
-    float diff = pfmod(a - b, 360);
-	return (diff < 180) ? diff : diff - 360;
+	return splitFmod(a - b, 360);
 }
 
 bool withinDeadband(float a, float b, float deadband, bool useMod) {

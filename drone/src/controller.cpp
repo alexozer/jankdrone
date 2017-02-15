@@ -145,7 +145,7 @@ Controller::AxisControl::AxisControl(std::string name, bool mod):
 float Controller::AxisControl::out(float dt) {
 	if (*m_enabled) {
 		*m_desire += dt * *m_velDesire;
-		if (m_mod) *m_desire = pfmod(*m_desire, 360);
+		if (m_mod) *m_desire = splitFmod(*m_desire, 360);
 
 		*m_out = m_pid(dt, *m_current, *m_desire, *m_p, *m_i, *m_d);
 	} else {
