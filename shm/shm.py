@@ -88,6 +88,7 @@ untagged_shm = {
 
     'remote': {
         'connected': False,
+        'rssi': 0,
     },
 
     'threadTime': {
