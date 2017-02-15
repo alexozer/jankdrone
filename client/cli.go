@@ -88,6 +88,7 @@ var cliShortcuts = map[string]BoundVar{
 	"pd": MustBindVar("pitchConf", "enabled", false),
 	"rd": MustBindVar("rollConf", "enabled", false),
 
+	"z":     MustBindVar("placement", "z", nil),
 	"yaw":   MustBindVar("placement", "yaw", nil),
 	"pitch": MustBindVar("placement", "pitch", nil),
 	"roll":  MustBindVar("placement", "roll", nil),
