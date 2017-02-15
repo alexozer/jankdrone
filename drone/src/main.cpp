@@ -31,7 +31,7 @@ struct Main {
 		Thread([&] { controller(); }, Thread::SECOND / 1000, &shm().threadTime.controller),
 		Thread([&] { deadman(); }, Thread::SECOND / 30),
 		Thread(&Power::readVoltage, Thread::SECOND / 10),
-		Thread(&Led::showShm, Thread::SECOND / 60, &shm().threadTime.led),
+		Thread(&Led::showShm, Thread::SECOND / 30, &shm().threadTime.led),
 	} {}
 
 	void operator()() { while (true) threads(); }
