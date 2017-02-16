@@ -19,7 +19,7 @@ constexpr float COPTER_RADIUS = 0.26924,
 constexpr bool THRUSTER0_CCW = true;
 
 // Pins are specified counterclockwise
-constexpr int THRUSTER_PINS[] = {3, 23, 22, 6, 5, 4},
+constexpr int THRUSTER_PINS[] = {22, 4, 5, 6, 23, 3},
 		  NUM_THRUSTERS = sizeof(THRUSTER_PINS) / sizeof(THRUSTER_PINS[0]),
 		  MIN_ESC_PULSE = 700,
 		  MAX_ESC_PULSE = 2000,

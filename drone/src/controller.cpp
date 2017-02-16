@@ -137,6 +137,7 @@ Controller::AxisControl::AxisControl(std::string name, bool mod):
 	m_i = settings->var("i")->ptr<float>();
 	m_d = settings->var("d")->ptr<float>();
 	m_current = shm().placement.var(name)->ptr<float>();
+	m_currentVel = shm().placement.var(name + "Vel")->ptr<float>();
 	m_desire = shm().desires.var(name)->ptr<float>();
 	m_velDesire = shm().desires.var(name + "Vel")->ptr<float>();
 	m_out = shm().controllerOut.var(name)->ptr<float>();
@@ -147,7 +148,9 @@ float Controller::AxisControl::out(float dt) {
 		*m_desire += dt * *m_velDesire;
 		if (m_mod) *m_desire = splitFmod(*m_desire, 360);
 
-		*m_out = m_pid(dt, *m_current, *m_desire, *m_p, *m_i, *m_d);
+		*m_out = m_pid(dt, 
+				*m_current, *m_currentVel, *m_desire,
+				*m_p, *m_i, *m_d);
 	} else {
 		*m_out = 0;
 	}

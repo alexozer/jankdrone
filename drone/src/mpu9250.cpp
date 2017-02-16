@@ -1344,6 +1344,10 @@ void loop()
     gx = (float)MPU9250Data[4]*gRes;  // get actual gyro value, this depends on scale being set
     gy = (float)MPU9250Data[5]*gRes;  
     gz = (float)MPU9250Data[6]*gRes;   
+
+	shm().placement.yawVel = NEGATE_YAW ? -gz : gz;
+	shm().placement.pitchVel = NEGATE_PITCH ? -gy : gy;
+	shm().placement.rollVel = NEGATE_ROLL ? -gx : gx;
   
     readMagData(magCount);  // Read the x/y/z adc values
    

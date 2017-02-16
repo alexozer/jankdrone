@@ -2,23 +2,16 @@
 #include <cmath>
 #include "maths.h"
 
-PID::PID(std::function<float(float, float)> diffFunc):
-	m_diffFunc{diffFunc}, m_firstRun{true}, m_lastValue{0} {}
+PID::PID(std::function<float(float, float)> diffFunc): m_diffFunc{diffFunc} {}
 
-float PID::operator()(float dt, float value, float desire, float p, float i, float d) {
-	if (m_firstRun) {
-		m_lastValue = value;
-		m_firstRun = false;
-		return 0;
-	}
-
+float PID::operator()(float dt, float value, float velValue, float desire, float p, float i, float d) {
 	// TODO implement integral term
 	float error = m_diffFunc(desire, value);
-	return p * error + d * m_diffFunc(-value, -m_lastValue) / dt;
+	return p * error - d * velValue;
 }
 
 void PID::reset() {
-	m_firstRun = true;
+	// TODO implement integral term
 }
 
 float splitFmod(float a, float mod) {
