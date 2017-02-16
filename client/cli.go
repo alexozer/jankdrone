@@ -282,6 +282,7 @@ func (this *Cli) drawAxis(name string, x, y, width, height int) {
 	textWidth := width - 3
 	ls.Items = []string{
 		padApart("VAL:", this.vars["placement"][name].ValueString(), textWidth),
+		padApart("VEL:", this.vars["placement"][name+"Vel"].ValueString(), textWidth),
 		padApart("OUT:", this.vars["controllerOut"][name].ValueString(), textWidth),
 		padApart("EN:", conf["enabled"].ValueString(), textWidth),
 	}
