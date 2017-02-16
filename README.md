@@ -1,5 +1,5 @@
 # jankdrone
-The jankest drone the world has ever seen.
+The jankest autonomous drone ever built and programmed from scratch.
 
 # Dependencies
 - platformio
