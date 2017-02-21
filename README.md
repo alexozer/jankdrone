@@ -1,5 +1,7 @@
+> *jank*: broken, meaningless, ridiculously moronic, or of questionable quality
+
 # jankdrone
-The jankest autonomous drone ever built and programmed from scratch.
+The jankest autonomous drone ever built and programmed from scratch. Truly insulting to drones in general.
 
 **Watch jankdrone fly! (and crash)**
 
