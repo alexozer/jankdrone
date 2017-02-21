@@ -1,6 +1,10 @@
 # jankdrone
 The jankest autonomous drone ever built and programmed from scratch.
 
+**Watch jankdrone fly! (and crash)**
+
+[![jankdrone](https://img.youtube.com/vi/-ZaXxxx3Wac/0.jpg)](https://www.youtube.com/watch?v=-ZaXxxx3Wac)
+
 # Dependencies
 - platformio
 - Python 3
