@@ -58,15 +58,17 @@ The jankest drone the world has ever seen.
 	- [x] ESC plugs
 	- [x] Voltage monitor wire
 	- [x] LED strips
-	- [ ] RFM69 Radio transceiver
+	- [x] RFM69 Radio transceiver
+	- [x] ~~Altimeter mount~~ broken altimeter
 - Power board
 	- [x] 12V power rail
 	- [x] Voltage measurement source
 	- [x] 5V-regulated power for computer board
+	- [x] 3.3V-regulated power for radio
 - Handheld controller
 	- [x] Joysticks
 	- [x] Softkill switch
-	- [ ] Radio tranceiver
+	- [x] Radio tranceiver
 
 ## Mechanical
 
@@ -96,4 +98,4 @@ The jankest drone the world has ever seen.
 	- [x] Mounting protoboard
 	- [x] 2 joysticks with embedded buttons
 	- [x] Radio tranceiver
-	- [ ] External power and regulator
+	- [x] External power and regulator
