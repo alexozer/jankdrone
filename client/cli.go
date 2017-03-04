@@ -88,6 +88,7 @@ var cliShortcuts = map[string]BoundVar{
 	"pd": MustBindVar("pitchConf", "enabled", false),
 	"rd": MustBindVar("rollConf", "enabled", false),
 
+	"z":     MustBindVar("placement", "z", nil),
 	"yaw":   MustBindVar("placement", "yaw", nil),
 	"pitch": MustBindVar("placement", "pitch", nil),
 	"roll":  MustBindVar("placement", "roll", nil),
@@ -281,6 +282,7 @@ func (this *Cli) drawAxis(name string, x, y, width, height int) {
 	textWidth := width - 3
 	ls.Items = []string{
 		padApart("VAL:", this.vars["placement"][name].ValueString(), textWidth),
+		padApart("VEL:", this.vars["placement"][name+"Vel"].ValueString(), textWidth),
 		padApart("OUT:", this.vars["controllerOut"][name].ValueString(), textWidth),
 		padApart("EN:", conf["enabled"].ValueString(), textWidth),
 	}

@@ -48,7 +48,7 @@ untagged_shm = {
     },
 
     'controller': {
-        'enabled': False,
+        'enabled': True,
     },
 
     'controllerOut': {
@@ -63,6 +63,11 @@ untagged_shm = {
         'yaw': 0.0,
         'pitch': 0.0,
         'roll': 0.0,
+
+        'zVel': 0.0,
+        'yawVel': 0.0,
+        'pitchVel': 0.0,
+        'rollVel': 0.0,
     },
 
     'temperature': {
@@ -83,11 +88,12 @@ untagged_shm = {
 
     'deadman': {
         'enabled': True,
-        'maxTilt': 30.0,
+        'maxTilt': 50.0,
     },
 
     'remote': {
         'connected': False,
+        'rssi': 0,
     },
 
     'threadTime': {
@@ -114,17 +120,17 @@ untagged_shm = {
     },
 
     'pitchConf': {
-        'enabled': False,
-        'p': 0.01,
+        'enabled': True,
+        'p': 0.05,
         'i': 0.0,
-        'd': 0.0,
+        'd': 0.0125,
     },
 
     'rollConf': {
-        'enabled': False,
-        'p': 0.01,
+        'enabled': True,
+        'p': 0.05,
         'i': 0.0,
-        'd': 0.0,
+        'd': 0.0125,
     },
 }
 

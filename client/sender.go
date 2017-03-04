@@ -37,6 +37,7 @@ func (this *Sender) Start() {
 
 	go func() {
 		var handheldConnected, droneConnected bool
+		//var handheldConnected bool
 
 		for {
 			select {
@@ -123,7 +124,7 @@ func (this *Sender) read(encodedInChan chan chan []byte) {
 				}
 				if proto.Unmarshal(encodedVar[1:encodedVar[0]+1], shmMsg) != nil {
 					this.status <- "Unable to unmarshal remote message"
-					continue
+					break
 				}
 
 				var outValue interface{}
@@ -136,13 +137,13 @@ func (this *Sender) read(encodedInChan chan chan []byte) {
 					outValue = inValue.BoolValue
 				default:
 					this.status <- "Unknown remote var type"
-					continue
+					break
 				}
 
 				v, err := BindVarTag(int(*shmMsg.Tag), outValue)
 				if err != nil {
 					this.status <- fmt.Sprint("Failed to bind remote var:", err)
-					continue
+					break
 				}
 				this.varsOut <- v
 				encodedVar = encodedVar[encodedVar[0]+1:]

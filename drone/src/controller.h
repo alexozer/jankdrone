@@ -31,8 +31,9 @@ class Controller {
 			private:
 				bool m_mod;
 				bool* m_enabled;
-				float *m_current, *m_desire, *m_velDesire, *m_out,
-					*m_p, *m_i, *m_d;
+				float *m_current, *m_currentVel, 
+					  *m_desire, *m_velDesire, *m_out,
+					  *m_p, *m_i, *m_d;
 				PID m_pid;
 		};
 

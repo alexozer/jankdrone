@@ -10,33 +10,45 @@ Remote::Remote():
 	m_radioStream{
 		RADIO_CS_PIN,
 		RADIO_IRQ_PIN,
-		RADIO_IRQN,
-		RADIO_RST_PIN,
+		HAVE_RFM69HCW
+	},
+	m_gotMsg{false},
+	m_lastMsgTime{0}
+{
+	m_radioStream.begin(
 		RADIO_FREQUENCY,
 		RADIO_NODE_ID,
 		RADIO_RECEIVER_ID,
 		RADIO_NETWORK_ID,
-		RADIO_POWER,
-		HAVE_RFM69HCW,
-	} {}
+		RADIO_RST_PIN,
+		RADIO_POWER
+	);
+}
 
 void Remote::operator()() {
+	m_gotMsg = false;
+
+	int rssi = m_radioStream.rfm69().RSSI;
+	if (rssi != 0) shm().remote.rssi = rssi;
 	readStream(&m_radioStream);
 	readStream(&Serial);
+
+	unsigned long t = millis();
+	if (m_gotMsg) m_lastMsgTime = t;
+	shm().remote.connected = t - m_lastMsgTime < REMOTE_TIMEOUT;
 }
 
 void Remote::readStream(Stream* stream) {
 	while (stream->available()) {
-	
-		int size = stream->read();
-		int bytesRead = 0;
+		uint8_t size = stream->read();
+		size_t bytesRead = 0;
 		while (bytesRead < size && stream->available()) {
 			m_messageBuffer[bytesRead++] = stream->read();
 		}
 		if (bytesRead < size) {
 			// Assume the whole message is available at once
 			Log::error("Remote message shorter than expected length, discarding");
-			return;
+			continue;
 		}
 
 		ShmMsg msg = ShmMsg_init_zero;
@@ -49,7 +61,7 @@ void Remote::readStream(Stream* stream) {
 		auto shmVar = shm().varIfExists(msg.tag);
 		if (!shmVar) {
 			Log::error("Remote var tag not found: %d", msg.tag);
-			return;
+			continue;
 		}
 
 		Shm::Var::Type msgVarType;
@@ -65,7 +77,8 @@ void Remote::readStream(Stream* stream) {
 				break;
 			default:
 				sendVar(stream, shmVar);
-				return;
+				m_gotMsg = true;
+				continue;
 		}
 
 		auto shmVarType = shmVar->type();
@@ -73,6 +86,7 @@ void Remote::readStream(Stream* stream) {
 			Log::error("Remote var type mismatch: expected %s, got %s",
 					Shm::Var::typeString(shmVarType).c_str(),
 					Shm::Var::typeString(msgVarType).c_str());
+			continue;
 		}
 
 		switch (shmVarType) {
@@ -87,8 +101,10 @@ void Remote::readStream(Stream* stream) {
 				break;
 			default:
 				Log::error("Unsupported remote var type");
-				break;
+				continue;
 		}
+
+		m_gotMsg = true;
 	}
 
 	stream->flush();

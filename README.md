@@ -1,5 +1,11 @@
+> *jank*: broken, meaningless, ridiculously moronic, or of questionable quality
+
 # jankdrone
-The jankest drone the world has ever seen.
+The jankest autonomous drone ever built and programmed from scratch. Truly insulting to drones in general.
+
+**Watch jankdrone fly! (and crash)**
+
+[![jankdrone](https://img.youtube.com/vi/-ZaXxxx3Wac/0.jpg)](https://www.youtube.com/watch?v=-ZaXxxx3Wac)
 
 # Dependencies
 - platformio
@@ -45,7 +51,7 @@ The jankest drone the world has ever seen.
 	- [ ] Force-thrust function from bollard-poll
 - [x] Voltage measurement
 - [x] LED strips
-- [x] Deadman (kill / land on disconnection, critical battery)
+- [x] Deadman (kill / land in critical conditions)
 - Autonomous
 	- [x] Mission framework
 	- [ ] Missions

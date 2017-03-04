@@ -19,15 +19,15 @@ constexpr float COPTER_RADIUS = 0.26924,
 constexpr bool THRUSTER0_CCW = true;
 
 // Pins are specified counterclockwise
-constexpr int THRUSTER_PINS[] = {3, 23, 22, 6, 5, 4},
+constexpr int THRUSTER_PINS[] = {22, 4, 5, 6, 23, 3},
 		  NUM_THRUSTERS = sizeof(THRUSTER_PINS) / sizeof(THRUSTER_PINS[0]),
 		  MIN_ESC_PULSE = 700,
 		  MAX_ESC_PULSE = 2000,
 		  ESCS_CALIBRATED_ADDRESS = 0;
 
 constexpr int RADIO_NETWORK_ID = 100,
-		  RADIO_NODE_ID = 2,
-		  RADIO_RECEIVER_ID = 1,
+		  RADIO_NODE_ID = 1,
+		  RADIO_RECEIVER_ID = 2,
 
 		  // Set based on your RF69 module
 		  RADIO_FREQUENCY = RF69_915MHZ; 
@@ -35,9 +35,10 @@ constexpr bool HAVE_RFM69HCW = false;
 
 constexpr int RADIO_CS_PIN = 10,
 		  RADIO_IRQ_PIN = 2,
-		  RADIO_IRQN = 0,
 		  RADIO_RST_PIN = 9,
 		  RADIO_POWER = 31; // [0, 31]
+
+constexpr unsigned long REMOTE_TIMEOUT = 1000;
 
 // Change to adjust for placement / coordinate system of IMU
 // Offset means add 180 degrees

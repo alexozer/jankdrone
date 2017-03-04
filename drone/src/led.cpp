@@ -11,19 +11,19 @@ void Led::showShm() {
 			dynamic();
 			break;
 		case CALIBRATION:
-			get().m_calibrationThread();
+			calibration();
 			break;
 		case FLYING:
-			get().m_flyingThread();
+			flying();
 			break;
 		case LOW_BATT:
-			get().m_lowBattThread();
+			lowBatt();
 			break;
 		case CRIT_BATT:
-			get().m_critBattThread();
+			critBatt();
 			break;
 		default:
-			get().m_offThread();
+			off();
 			break;
 	}
 }
@@ -35,13 +35,13 @@ void Led::off() {
 
 void Led::dynamic() {
 	if (shm().power.critical) {
-		get().m_critBattThread();
+		critBatt();
 	} else if (shm().power.low) {
-		get().m_lowBattThread();
+		lowBatt();
 	} else if (!shm().switches.softKill && shm().controller.enabled) {
-		get().m_flyingThread();
+		flying();
 	} else {
-		get().m_offThread();
+		off();
 	}
 }
 
@@ -58,22 +58,23 @@ void Led::calibration() {
 
 void Led::flying() {
 	constexpr int COLOR_PERIOD = 5000,
-			  WAVE_PERIOD = 500;
+			  WAVE_PERIOD = 500,
+			  S = 255;
 	unsigned long t = millis();
 	int colorLerp = t % COLOR_PERIOD * 255 / COLOR_PERIOD;
 	int waveLerp = t % WAVE_PERIOD * 255 / WAVE_PERIOD;
 
 	for (int row = 0; row < LED_ROWS; row++) {
 		for (int col = 0; col < LED_COLS; col++) {
-			int hue = row % 2 == 0 ? 0 : 255 / 3;
-			hue = (hue + colorLerp) % 255;
+			int h = row % 2 == 0 ? 0 : 255 / 3;
+			h = (h + colorLerp) % 255;
 			
 			int vLerp = 255 * (LED_ROWS - row - 1) / LED_ROWS * 2;
 			vLerp += -waveLerp + col * 255 / LED_COLS / 2;
 			vLerp %= 255;
 			int v = quadwave8(vLerp);
 
-			get().m_leds[row * LED_COLS + col] = CHSV(hue, 255, v);
+			get().m_leds[row * LED_COLS + col] = CHSV(h, S, v);
 		}
 	}
 
@@ -81,36 +82,32 @@ void Led::flying() {
 }
 
 void Led::lowBatt() {
-	constexpr int MOD = 3;
-
-	get().m_step = (get().m_step + 1) % MOD;
+	constexpr int TIME_PERIOD = 500,
+			  ROWS_PERIOD = 6,
+			  H = 25, S = 255;
 
 	for (int row = 0; row < LED_ROWS; row++) {
-		auto color = row % MOD == get().m_step ? CRGB::Orange : CRGB::Black;
-		fill_solid(&get().m_leds[row * LED_COLS], LED_COLS, color);
+		int timeLerp = (millis() % TIME_PERIOD) * 255 / TIME_PERIOD;
+		timeLerp += ((row % ROWS_PERIOD) * 255 / ROWS_PERIOD) % 255;
+		int v = sin8(timeLerp);
+
+		fill_solid(&get().m_leds[row * LED_COLS], LED_COLS, CHSV(H, S, v));
 	}
 
 	FastLED.show();
 }
 
 void Led::critBatt() {
-	constexpr int MOD = 2;
-	get().m_step = (get().m_step + 1) % MOD;
+	constexpr int PERIOD = 250,
+			  H = 0, S = 255;
 
-	auto color = get().m_step ? CRGB::Red : CRGB::Black;
-	fill_solid(get().m_leds, NUM_LEDS, color);
-
+	int v = quadwave8(millis() % PERIOD * 255 / PERIOD);
+	fill_solid(get().m_leds, LED_ROWS * LED_COLS, CHSV(H, S, v));
+	
 	FastLED.show();
 }
 
-Led::Led():
-	m_offThread{[&] { off(); }, Thread::SECOND / 10},
-	m_calibrationThread{[&] { calibration(); }, Thread::SECOND / 10},
-	m_flyingThread{[&] { flying(); }, Thread::SECOND / 30},
-	m_lowBattThread{[&] { lowBatt(); }, Thread::SECOND / 8},
-	m_critBattThread{[&] { critBatt(); }, Thread::SECOND / 8},
-	m_step{0}
-{
+Led::Led() {
 	FastLED.addLeds<NEOPIXEL, LED_PIN>(m_leds, NUM_LEDS);
 	FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTAGE, LED_CURRENT_MA);
 }

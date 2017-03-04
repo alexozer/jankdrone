@@ -28,15 +28,8 @@ class Led {
 			LOW_BATT,
 			CRIT_BATT,
 		};
+
 		CRGB m_leds[NUM_LEDS];
-
-		Thread m_offThread;
-		Thread m_calibrationThread;
-		Thread m_flyingThread;
-		Thread m_lowBattThread;
-		Thread m_critBattThread;
-
-		int m_step;
 
 		Led();
 		static Led& get();

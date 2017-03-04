@@ -2,14 +2,15 @@
 #include <string.h>
 #include "radio_stream.h"
 
-RadioStream::RadioStream(
-		uint8_t csPin, uint8_t irqPin, int irqn, uint8_t rstPin, 
-		int freq, int nodeId, int receiverId, int networkId, int power, bool haveRFM69HCW):
-	m_radio{csPin, irqPin, irqn, rstPin},
-	m_receiverId{receiverId},
+RadioStream::RadioStream(uint8_t csPin, uint8_t irqPin, bool haveRFM69HCW):
+	m_radio{csPin, irqPin, haveRFM69HCW, (uint8_t)digitalPinToInterrupt(irqPin)},
 	m_recvBegin{0},
-	m_recvEnd{0}
-{
+	m_recvEnd{0},
+	m_sendEnd{0} {}
+
+void RadioStream::begin(int freq, int nodeId, int receiverId, int networkId, uint8_t rstPin, int power) {
+	m_receiverId = receiverId;
+
 	// Hard reset
 	pinMode(rstPin, OUTPUT);
 	digitalWrite(rstPin, HIGH);
@@ -18,7 +19,6 @@ RadioStream::RadioStream(
 	delay(100);
 
 	m_radio.initialize(freq, nodeId, networkId);
-	if (haveRFM69HCW) m_radio.setHighPower();
 	m_radio.setPowerLevel(power);
 }
 
@@ -79,4 +79,8 @@ void RadioStream::flush() {
 	m_radio.send(m_receiverId, m_sendBuf, m_sendEnd);
 	m_sendEnd = 0;
 	m_radio.receiveDone();
+}
+
+RFM69& RadioStream::rfm69() {
+	return m_radio;
 }
