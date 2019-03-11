@@ -3,6 +3,10 @@
 # jankdrone
 The jankest autonomous drone ever built and programmed from scratch. Truly insulting to drones in general.
 
+[HackerNews Thread](https://news.ycombinator.com/item?id=19354431#19355931)
+
+[Photo Album](https://photos.app.goo.gl/QhSZEyd4DA1r9S9G6)
+
 [Watch jankdrone fly! (and crash)](https://www.youtube.com/watch?v=-ZaXxxx3Wac)
 
 [![jankdrone](/doc/video-thumbnail.png)](https://www.youtube.com/watch?v=-ZaXxxx3Wac)
